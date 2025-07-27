@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.blueing.sports_meet_system.mapper.SportMeetingsMapper">
+    <insert id="addSportMeeting" useGeneratedKeys="true" keyProperty="smId">
+        insert into sm (name, img, start_time, end_time, am_start_time, am_end_time, pm_start_time, pm_end_time,
+                        registration_deadline, status, max_players, max_events, number_config)
+            value (#{name}, #{img}, #{startTime}, #{endTime}, #{amStartTime}, #{amEndTime}, #{pmStartTime},
+                   #{pmEndTime}, #{registrationDeadline}, 1, #{maxPlayers}, #{maxEvents}, #{levelConfig})
+    </insert>
+    <insert id="copySportsBySports">
+        insert into sports (name, app_start_time, app_end_time, comp_system,
+        comp_type, main_sp_id, venue, sm_id, event_type, sub_event_type, size, count_pgp, status,
+        rise_count, rise_type, gender, rid)
+        values
+        <foreach collection="sports" item="s" separator=",">
+            (#{s.name},#{now},#{appEndTime},#{s.compSystem},
+            #{s.compType},#{s.mainSpId},#{s.venue},#{smId},#{s.eventType},#{s.subEventType},
+            #{s.size},#{s.countPgp},1,#{s.riseCount},#{s.riseType},#{s.gender},#{s.rid})
+        </foreach>
+    </insert>
+    <insert id="copyRuleByRid" keyProperty="judgeRule.rid" useGeneratedKeys="true">
+        insert into judge_rules (name, units, mappings, sm_id, is_rank_mode)
+            (select name, units, mappings,#{smId}, is_rank_mode
+             from judge_rules
+             where rid = #{judgeRule.rid})
+    </insert>
+    <insert id="copySportsBySport" useGeneratedKeys="true" keyProperty="s.spId">
+        insert into sports (name, app_start_time, app_end_time, comp_system,
+                            comp_type, main_sp_id, venue, sm_id, event_type, sub_event_type, size, count_pgp, status,
+                            rise_count, rise_type, gender, rid)
+        values (#{s.name}, #{now}, #{appEndTime}, #{s.compSystem},
+                #{s.compType}, #{s.mainSpId}, #{s.venue}, #{smId}, #{s.eventType}, #{s.subEventType},
+                #{s.size}, #{s.countPgp}, 1, #{s.riseCount}, #{s.riseType}, #{s.gender}, #{s.rid})
+    </insert>
+    <update id="updateMeetingInfo">
+        update sm
+        <set>
+            <if test="name!=null">name=#{name},</if>
+            <if test="startTime!=null">start_time=#{startTime},</if>
+            <if test="img!=null">img=#{img},</if>
+            <if test="endTime!=null">end_time=#{endTime},</if>
+            <if test="amStartTime!=null">am_start_time=#{amStartTime},</if>
+            <if test="amEndTime!=null">am_end_time=#{amEndTime},</if>
+            <if test="pmStartTime!=null">pm_Start_time=#{pmStartTime},</if>
+            <if test="pmEndTime!=null">pm_end_time=#{pmEndTime},</if>
+            <if test="registrationDeadline!=null">registration_deadline=#{registrationDeadline},</if>
+            <if test="status!=null">status=#{status},</if>
+        </set>
+        where sm_id=#{smId}
+    </update>
+</mapper>

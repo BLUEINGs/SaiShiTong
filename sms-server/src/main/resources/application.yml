@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: sports_meet_system
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://8.140.62.7:3306/sports_meet
+    username: root
+    password: 200600
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 100MB
+
+mybatis:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    map-underscore-to-camel-case: true
+
+oss:
+  head-portrait :
+    path: /home/blog/nginx/html/img/head_portrait
+#    path: F:\\运动会编排系统\\oss(moni)\\schoolImg
+    #???????
+#    url: F:\\运动会编排系统\\oss(moni)\\schoolImg\\
+    url: http://8.140.62.7/img/head_portrait/
+#
+logging:
+  level:
+    org.springframework.jdbc.support.JdbcTransactionManager: debug;

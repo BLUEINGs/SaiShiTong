@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.blueing.sports_meet_system.mapper.ScheduleMapper">
+    <update id="modifySportTime">
+        update sports
+        <set>
+            <if test="gameStartTime!=null">game_start_time=#{gameStartTime},</if>
+            <if test="gameEndTime!=null">game_end_time=#{gameEndTime},</if>
+            <if test="venue!=null">venue=#{venue},</if>
+        </set>
+        where sp_id=#{spId}
+    </update>
+</mapper>

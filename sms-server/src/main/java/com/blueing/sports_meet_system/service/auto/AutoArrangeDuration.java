@@ -1,0 +1,281 @@
+package com.blueing.sports_meet_system.service.auto;
+
+import com.blueing.sports_meet_system.mapper.*;
+import com.blueing.sports_meet_system.pojo.Player;
+import com.blueing.sports_meet_system.pojo.School;
+import com.blueing.sports_meet_system.pojo.Sport;
+import com.blueing.sports_meet_system.pojo.SportMeeting;
+import com.blueing.sports_meet_system.utils.MapUtil;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.*;
+import java.util.*;
+
+@Slf4j
+@Service
+public class AutoArrangeDuration {
+
+    @Autowired
+    private ScheduleMapper scheduleMapper;
+
+    @Autowired
+    private IndexMapper indexMapper;
+
+    @Autowired
+    private DepartmentMapper departmentMapper;
+
+    @Autowired
+    private SportMeetingsMapper sportMeetingsMapper;
+
+    @Autowired
+    private SportMapper sportMapper;
+
+    @Transactional
+    @Scheduled(fixedDelay = 60 * 1000 * 5)
+    public synchronized void arrangeDuration() {
+
+        log.info("更新可评分比赛的状态");
+        scheduleMapper.updateSportsStatusTo3(ZonedDateTime.now());
+
+        log.info("即将开始进行时间自动编排");
+        for (SportMeeting sm : indexMapper.getSportMeetingsDeadline(ZonedDateTime.now())) {//这地方还能优化
+            arrangeSmDuration(sm);
+        }
+        log.info("自动编排结束");
+    }
+
+    public void arrangeSmDuration(SportMeeting sm) {
+        //这两行是自动编号
+        log.info("开始自动编号");
+        List<School> schoolList = departmentMapper.getSchoolList(sm.getSmId());
+        numberPlayer(schoolList, sm.getSmId());
+        //下面的是自动排赛
+        //获取时段
+        TreeMap<ZonedDateTime, ZonedDateTime> periods = arrangePeriods(sm.getSmId());
+        //处理径赛
+        List<Sport> fieldSports = scheduleMapper.getNoArrangedSports(sm.getSmId(), 2);
+        fieldSports.sort(AutoArrangeDuration::compareCompType);
+        arrangeFieldSports(fieldSports, periods);
+        //处理田赛
+        List<Sport> trackSports = scheduleMapper.getNoArrangedSports(sm.getSmId(), 1);
+        trackSports.sort(AutoArrangeDuration::compareCompType);
+        log.info("处理后的径赛列表{}",trackSports.size());
+        arrangeTrackSports(trackSports, periods);
+        sm.setStatus(2);
+        sportMeetingsMapper.updateMeetingInfo(sm);
+    }
+
+    private static int compareCompType(Sport o1, Sport o2) {
+        int o1CompType;
+        int o2CompType;
+        if ((o1.getCompSystem() == 1 && o1.getCompType() == 3) || (o1.getCompSystem() != 1 && o1.getCompType() == 1)) {
+            o1CompType = 1;//即其实际上为”预赛或者预决“
+        } else {
+            o1CompType = o1.getCompType();
+        }
+        if ((o2.getCompSystem() == 1 && o2.getCompType() == 3) || (o2.getCompSystem() != 1 && o2.getCompType() == 1)) {
+            o2CompType = 1;//即其实际上为”预赛或者预决“
+        } else {
+            o2CompType = o2.getCompType();
+        }
+        return o1CompType - o2CompType;
+    }
+
+    private void numberPlayer(List<School> schoolList, Integer smId){
+        for (School school : schoolList) {
+            List<String> levels = MapUtil.toStringList(school.getTeamNumber());
+            StringBuilder prxB= new StringBuilder();
+            for (String level : levels) {
+                log.info("当前级别为{}",level);
+                prxB.append(level);
+            }
+            String prx = prxB.toString();
+//            log.info("前缀为：{}", prx);
+            List<Player> players = departmentMapper.getPlayerList(school.getScId());
+            int size = players.size();
+            int length0 = String.valueOf(size).length();
+            for (int i = 0; i < size; i++) {
+                Player player = players.get(i);
+                StringBuilder number = new StringBuilder(i+"");
+                int length = number.length();
+                if(length<length0){
+                    for (int j = 0; j < (length0 - length); j++) {
+                        number.insert(0, 0);
+                    }
+                }
+                player.setNumber(prx+number);
+                departmentMapper.modifyPlayer(player);
+            }
+        }
+    }
+
+    private void arrangeFieldSports(List<Sport> fieldSports, TreeMap<ZonedDateTime, ZonedDateTime> periods) {
+        //把不同子类型分出来，键为子类编号，值为具有该编号的运动项目
+        Map<Integer, List<Sport>> subSportList = new HashMap<>();
+        for (Sport fieldSport : fieldSports) {
+//            log.info("遍历到的田赛subEventType:{}",fieldSport.getSubEventType());
+            List<Sport> value;
+            if (!subSportList.containsKey(fieldSport.getSubEventType())) {
+                value = new ArrayList<>();
+            } else {
+                value = subSportList.get(fieldSport.getSubEventType());
+            }
+            value.add(fieldSport);
+            subSportList.put(fieldSport.getSubEventType(), value);
+        }
+//        log.info("本次整理结果{}",subSportList);
+        //按照各种子类型开始分配时间
+        for (List<Sport> sports : subSportList.values()) {
+//            log.info("{}本组共有{}，本组子类为{}",sports,sports.size(),sports.getFirst().getSubEventType());
+            Iterator<Map.Entry<ZonedDateTime, ZonedDateTime>> periodIterator = periods.entrySet().iterator();
+            Map.Entry<ZonedDateTime, ZonedDateTime> currentPeriod = null;
+            ZonedDateTime currentTime = null;
+            if (periodIterator.hasNext()) {
+                //初始值
+                currentPeriod = periodIterator.next();
+                currentTime = currentPeriod.getKey();
+            }
+            for (Sport sport : sports) {
+                Integer playerCount = sport.getPlayerCount();
+                if(playerCount==0){
+                    Sport lastSport = sportMapper.getLastSport(sport);
+                    Integer riseCount;
+                    if(lastSport==null|| (riseCount=lastSport.getRiseCount()) ==0){
+                        log.info("{},这田赛就是没有晋级名额或者根本没人报名",sport);
+                        continue;
+                    }
+                    playerCount=riseCount;
+                }
+                int costMin = playerCount + 10;
+                ZonedDateTime gameEndTime = currentTime != null ? currentTime.plusMinutes(costMin) : null;
+                if (currentTime != null && gameEndTime.compareTo(currentPeriod.getValue()) > 0) {
+                    //如果当前比赛按这样安排会排到结束时间后，就向下迭代
+                    if (periodIterator.hasNext()) {
+                        currentPeriod = periodIterator.next();
+                        currentTime = currentPeriod.getKey();
+//                        重新计算当前时间，重新计算比赛结束时间
+                        gameEndTime = currentTime != null ? currentTime.plusMinutes(costMin) : null;
+                    }//这里还有如果迭代不了的逻辑，之后再考虑
+                    else{
+                        log.info("运动项目过多，按你们给的时间实在是分不下了。算法已经万册尽了，总之把时间全部安排后面了，你们自己调整吧");
+                        //暂时先抛出异常
+//                        periods.put(currentPeriod.getKey().plusDays(1),currentPeriod.getValue().plusDays(1));
+                    }
+                }
+                sport.setGameStartTime(currentTime);
+//                assert currentTime != null;//断言能干啥？
+                sport.setGameEndTime(gameEndTime);
+                currentTime = gameEndTime;
+                scheduleMapper.modifySportTime(sport);
+            }
+//            log.info("田赛的当前子类下的运动项目分配完成{}",sports);
+        }
+
+    }
+
+    private void arrangeTrackSports(List<Sport> trackSports, TreeMap<ZonedDateTime, ZonedDateTime> periods){
+        Iterator<Map.Entry<ZonedDateTime, ZonedDateTime>> periodIterator = periods.entrySet().iterator();
+        Map.Entry<ZonedDateTime, ZonedDateTime> currentPeriod = null;
+        ZonedDateTime currentTime = null;
+        if (periodIterator.hasNext()) {
+            //初始值
+            currentPeriod = periodIterator.next();
+            currentTime = currentPeriod.getKey();
+        }
+        int count=0;
+        for (Sport sport : trackSports) {
+            count++;
+            log.info("总{}个，先便利到{}个",trackSports.size(),count);
+            Integer countPgp = sport.getCountPgp();
+            if(countPgp==null){
+                countPgp=1;
+            }
+            Integer playerCount = sport.getPlayerCount();
+            if(playerCount==0){
+                Sport lastSport = sportMapper.getLastSport(sport);
+                Integer riseCount;
+                if(lastSport==null|| (riseCount=lastSport.getRiseCount()) ==0){
+                    log.info("{}这径赛就是没有晋级名额或者根本没人报名",sport);
+                    continue;
+                }
+                playerCount=riseCount;
+            }
+            int costMin = calculateTrackMinutes(sport.getSize(),(int) Math.round((playerCount * 1.0) / countPgp));
+            ZonedDateTime gameEndTime = currentTime != null ? currentTime.plusMinutes(costMin) : null;
+            if (currentTime != null && gameEndTime.compareTo(currentPeriod.getValue()) > 0) {
+                //如果当前比赛按这样安排会排到结束时间后，就向下迭代
+                if (periodIterator.hasNext()) {
+                    currentPeriod = periodIterator.next();
+                    currentTime = currentPeriod.getKey();
+//                        重新计算当前时间，重新计算比赛结束时间
+                    gameEndTime = currentTime != null ? currentTime.plusMinutes(costMin) : null;
+                }//这里还有如果迭代不了的逻辑，之后再考虑
+                else{
+                    log.info("运动项目过多，按你们给的时间实在是分不下了。算法已经万册尽了，总之把时间全部安排后面了，你们自己调整吧");
+                    //暂时先抛出异常
+//                        periods.put(currentPeriod.getKey().plusDays(1),currentPeriod.getValue().plusDays(1));
+                }
+            }
+            sport.setGameStartTime(currentTime);
+//                assert currentTime != null;//断言能干啥？
+            sport.setGameEndTime(gameEndTime);
+            currentTime = gameEndTime;
+            log.info("当前遍历到径赛{},{}",sport.getSpId(),sport.getName());
+            scheduleMapper.modifySportTime(sport);
+        }
+        log.info("径赛分配完成{}",trackSports);
+    }
+
+    private int calculateTrackMinutes(String size,int groupCount){
+        int timePre;
+        try{
+            Integer.parseInt(size);
+            timePre=(Integer.parseInt(size)-100)/300+3;
+        } catch (NumberFormatException e) {
+            String[] split = size.split("\\*");
+            timePre = (Integer.parseInt(split[0]) * Integer.parseInt(split[1])-100)/300+3;
+        }
+        return timePre*groupCount+3;
+    }
+
+    private TreeMap<ZonedDateTime, ZonedDateTime> arrangePeriods(Integer smId) {
+        SportMeeting sportMeeting = scheduleMapper.getSportMeetings(smId);
+        log.info("开始安排可用时间段");
+        ZoneId zoneId = sportMeeting.getStartTime().getZone();
+        LocalDateTime startTime = sportMeeting.getStartTime().toLocalDateTime();
+        LocalDateTime endTime = sportMeeting.getEndTime().toLocalDateTime();
+        LocalDate startDate = startTime.toLocalDate();
+        LocalDate endDate = endTime.toLocalDate();
+        LocalTime amStartTime = sportMeeting.getAmStartTime();
+        LocalTime amEndTime = sportMeeting.getAmEndTime();
+        LocalTime pmStartTime = sportMeeting.getPmStartTime();
+        LocalTime pmEndTime = sportMeeting.getPmEndTime();
+
+        int dayCount = endTime.getDayOfMonth() - startTime.getDayOfMonth() + 1;
+        TreeMap<ZonedDateTime, ZonedDateTime> periods = new TreeMap<>(ZonedDateTime::compareTo);
+        log.info("共有{}天", dayCount);
+        for (int i = 0; i < dayCount; i++) {
+            /*if (i == 0) {
+                //第一天
+                int cha = amStartTime.getHour() - startTime.getHour();
+                if (cha >= -1&&cha<=1) {
+                    //如果上午开始时间比第一天晚或者早1小时以内，就认为第一天上午可以办运动会
+                    periods.put(startTime.atZone(zoneId), startDate.plusDays(i).atTime(amEndTime).atZone(zoneId));
+                }
+                periods.put(startDate.plusDays(i).atTime(pmStartTime).atZone(zoneId), startDate.plusDays(i).atTime(pmEndTime).atZone(zoneId));
+            } else */
+            //整这么麻烦，直接不做首日判断不就行了
+            {
+                periods.put(startDate.plusDays(i).atTime(amStartTime).atZone(zoneId), startDate.plusDays(i).atTime(amEndTime).atZone(zoneId));
+                periods.put(startDate.plusDays(i).atTime(pmStartTime).atZone(zoneId), startDate.plusDays(i).atTime(pmEndTime).atZone(zoneId));
+            }
+        }
+        log.info(periods.toString());
+        return periods;
+    }
+
+}

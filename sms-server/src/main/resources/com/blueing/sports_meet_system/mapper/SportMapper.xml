@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.blueing.sports_meet_system.mapper.SportMapper">
+    <insert id="addGroup" keyProperty="gid" useGeneratedKeys="true">
+        insert into sp_groups(name, sm_id, sp_id) value (#{name}, #{smId}, #{spId})
+    </insert>
+    <insert id="addSport" useGeneratedKeys="true" keyProperty="sport.spId">
+        INSERT INTO sports (name, app_start_time, app_end_time, game_start_time,
+        game_end_time,comp_system,comp_type,count_pgp,rise_type,rise_count,venue,main_sp_id,sm_id,status,event_type,sub_event_type,size,gender
+        )
+        <if test="sport.mainSpId!=null">
+            VALUES (#{sport.name}, #{sport.appStartTime}, #{sport.appEndTime}, #{sport.gameStartTime},
+            #{sport.gameEndTime},#{sport.compSystem},#{sport.compType},#{sport.countPgp},#{sport.riseType},#{sport.riseCount},#{sport.venue},#{sport.mainSpId},#{smId},1,#{sport.eventType},#{sport.subEventType},#{sport.size},#{sport.gender})
+        </if>
+        <if test="sport.mainSpId==null">
+            VALUES (#{sport.name}, #{sport.appStartTime}, #{sport.appEndTime}, #{sport.gameStartTime},
+            #{sport.gameEndTime},#{sport.compSystem},#{sport.compType},#{sport.countPgp},#{sport.riseType},#{sport.riseCount},#{sport.venue},#{sport.spId},#{smId},1,#{sport.eventType},#{sport.subEventType},#{sport.size},#{sport.gender})
+        </if>
+    </insert>
+    <!--    <update id="modifySportGroup"></update>-->
+    <update id="modifySport">
+        update sports
+        <set>
+            <if test="name!=null">name=#{name},</if>
+            <if test="compSystem!=null">comp_system=#{compSystem},</if>
+            <if test="venue!=null">venue=#{venue},</if>
+            <if test="gender!=null">gender=#{gender},</if>
+            <if test="gender==null">gender=null,</if>
+            <if test="compType!=null">comp_type=#{compType},</if>
+            <if test="appStartTime!=null">app_start_time=#{appStartTime},</if>
+            <if test="appEndTime!=null">app_end_time=#{appEndTime},</if>
+            <if test="countPgp!=null">count_pgp=#{countPgp},</if>
+            <if test="rid!=null">rid=#{rid},</if>
+            <if test="riseType!=null">rise_type=#{riseType},</if>
+            <if test="riseCount!=null">rise_count=#{riseCount},</if>
+            <if test="mainSpId!=null">main_sp_id=#{mainSpId},</if>
+            <if test="status!=null">status=#{status},</if>
+        </set>
+        <where>
+            <if test="spId!=null">sp_id=#{spId}</if>
+            <if test="mainSpId!=null">and main_sp_id=#{mainSpId}</if>
+            <if test="compType!=null">and comp_type=#{compType}</if>
+        </where>
+    </update>
+    <update id="setSportMainSpId">
+        update sports
+        <set>
+            <if test="mainSpId!=null">main_sp_id=#{mainSpId},</if>
+        </set>
+        <where>
+            <if test="spId!=null">sp_id=#{spId}</if>
+        </where>
+    </update>
+    <update id="modifySportNoSignGender">
+        update sports
+        <set>
+            <if test="name!=null">name=#{name},</if>
+            <if test="compSystem!=null">comp_system=#{compSystem},</if>
+            <if test="venue!=null">venue=#{venue},</if>
+            <if test="gender!=null">gender=#{gender},</if>
+            <if test="compType!=null">comp_type=#{compType},</if>
+            <if test="appStartTime!=null">app_start_time=#{appStartTime},</if>
+            <if test="appEndTime!=null">app_end_time=#{appEndTime},</if>
+            <if test="countPgp!=null">count_pgp=#{countPgp},</if>
+            <if test="rid!=null">rid=#{rid},</if>
+            <if test="riseType!=null">rise_type=#{riseType},</if>
+            <if test="riseCount!=null">rise_count=#{riseCount},</if>
+            <if test="mainSpId!=null">main_sp_id=#{mainSpId},</if>
+            <if test="status!=null">status=#{status},</if>
+        </set>
+        <where>
+            <if test="spId!=null">sp_id=#{spId}</if>
+            <if test="mainSpId!=null">and main_sp_id=#{mainSpId}</if>
+            <if test="compType!=null">and comp_type=#{compType}</if>
+        </where>
+    </update>
+    <select id="getNextSportSpId" resultType="java.lang.Integer">
+        select s1.sp_id from sports s1 join
+        (SELECT sp_id FROM sports WHERE main_sp_id = #{mainSpId} AND comp_type=#{compType}+
+        <if test="compSystem==2">2</if>
+        <if test="compSystem==3">1</if>
+        )
+        s2 where s1.sp_id=s2.sp_id
+    </select>
+    <select id="getLastSport" resultType="com.blueing.sports_meet_system.pojo.Sport">
+        select s1.sp_id,
+        name,
+        app_start_time,
+        app_end_time,
+        player_count,
+        game_start_time,
+        game_end_time,
+        judge_start_time,
+        judge_end_time,
+        comp_system,
+        comp_type,
+        main_sp_id,
+        venue,
+        sm_id,
+        event_type,
+        sub_event_type,
+        size,
+        count_pgp,
+        status,
+        rise_count,
+        rise_type,
+        gender,
+        rid
+        from sports s1
+        join (SELECT sp_id FROM sports WHERE main_sp_id = #{mainSpId} AND
+        <if test="compSystem==1 and compType==3">comp_type=0</if>
+        <if test="compSystem==2 and compType==3">comp_type=1</if>
+        <if test="compSystem==2 and compType==1">comp_type=0</if>
+        <if test="compSystem==3">comp_type=#{compType}-1</if>) as s2
+        where s1.sp_id = s2.sp_id
+    </select>
+    <select id="getNextSport" resultType="com.blueing.sports_meet_system.pojo.Sport">
+        select s1.sp_id,
+        name,app_start_time,app_end_time,player_count,game_start_time,game_end_time,judge_start_time,judge_end_time,comp_system,
+        comp_type,main_sp_id,venue,sm_id,event_type,sub_event_type,size,count_pgp,status,rise_count,rise_type,gender,rid
+        from sports s1 join
+        (SELECT sp_id FROM sports WHERE main_sp_id = #{mainSpId} AND comp_type=#{compType}+
+        <if test="compSystem==2">2</if>
+        <if test="compSystem==3">1</if>
+        )
+        s2 where s1.sp_id=s2.sp_id
+    </select>
+</mapper>

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.blueing.sports_meet_system.mapper.DepartmentMapper">
+    <insert id="addApplications">
+        insert into application_sports(pid, sp_id, app_time,sm_id)
+            values
+                <foreach collection="applicationSports" item="app" separator=",">
+                    (#{app.pid}, #{app.spId}, #{app.appTime},#{smId})
+                </foreach>
+    </insert>
+    <insert id="addPlayer" useGeneratedKeys="true" keyProperty="pid">
+        insert into players(pid,name, number,age, gender, p_class, uid, sc_id,sports,sm_id,user_type)
+            value(#{pid},#{name},#{number},#{age}, #{gender}, #{pClass}, #{uid}, #{scId},#{sportsString},#{smId},4)
+    </insert>
+    <insert id="addSchool" useGeneratedKeys="true" keyProperty="scId">
+       insert into schools(name,slogan,img,team_number,sm_id) value(#{name},#{slogan},#{img},#{teamNumber},#{smId})
+    </insert>
+    <insert id="addLeader">
+        insert into players(pid,name, number,age, gender, p_class, uid, sc_id,sports,sm_id,user_type)
+            value(#{pid},#{name},#{number},#{age}, #{gender}, #{pClass}, #{uid}, #{scId},#{sportsString},#{smId},2)
+    </insert>
+    <!-- SQL语句 -->
+    <update id="modifySchool">
+        update schools
+        <set>
+            <if test="name!=null">name=#{name},</if>
+            <if test="slogan!=null">slogan=#{slogan},</if>
+            <if test="img!=null">img=#{img},</if>
+            <if test="playerCount!=null">player_count=#{playerCount},</if>
+            <if test="appCount!=null">app_count=#{appCount},</if>
+            <if test="teamNumber!=null">team_number=#{teamNumber},</if>
+        </set>
+        where sc_id=#{scId}
+    </update>
+    <update id="modifyPlayer">
+        update players
+        <set>
+            <if test="number!=null">number=#{number},</if>
+            <if test="name!=null">name=#{name},</if>
+            <if test="uid!=null">uid=#{uid},</if>
+            <if test="age!=null">age=#{age},</if>
+            <if test="gender!=null">gender=#{gender},</if>
+            <if test="pClass!=null">p_class=#{pClass},</if>
+        </set>
+        where sc_id=#{scId} and pid=#{pid}
+    </update>
+    <update id="updateSportPlayerCount">
+        update sports s set player_count=
+        (select count(*) from application_sports a where s.sp_id=a.sp_id)
+        where sp_id in
+        <foreach collection="spIds" separator="," item="spId" open="(" close=")">
+            #{spId}
+        </foreach>
+    </update>
+    <update id="updateSportPlayerCountByMainSpId">
+        update sports s set player_count=
+        (select count(*) from application_sports a where s.sp_id=a.sp_id)
+        <if test="spIds==null">
+            where main_sp_id=#{mainSpId}
+        </if>
+    </update>
+    <update id="updateDepartmentConfig">
+        update sm
+        <set>
+            <if test="maxPlayers!=null">max_players=#{maxPlayers},</if>
+            <if test="maxEvents!=null">max_events=#{maxEvents},</if>
+            <if test="levelConfig!=null">number_config=#{levelConfig},</if>
+        </set>
+        where sm_id=#{smId}
+    </update>
+    <delete id="deleteApplications">
+        delete from application_sports
+        where (pid,sp_id) in
+        <foreach collection="pidAndSpIds" separator="," item="pidAndSpId" open="(" close=")">
+            (#{pidAndSpId.pid},#{pidAndSpId.spId})
+        </foreach>
+    </delete>
+    <delete id="deleteApplicationsByScId">
+        delete from application_sports
+        where pid in (select pid from players where sc_id=#{scId})
+    </delete>
+    <delete id="deletePlayerByScId">
+        delete from players where sc_id=#{scId}
+    </delete>
+</mapper>

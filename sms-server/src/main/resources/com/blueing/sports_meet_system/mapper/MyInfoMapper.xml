@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.blueing.sports_meet_system.mapper.MyInfoMapper">
+    <select id="getSmsByUid" resultType="com.blueing.sports_meet_system.pojo.UserSm">
+        select us.uid,s.sm_id,s.name,us.power_degree,us.joined_schools as scIds from user_sm us left join sm s on us.sm_id=s.sm_id where uid=#{uid}
+    </select>
+    <select id="getSchoolsByScIds" resultType="com.blueing.sports_meet_system.pojo.School">
+        select sc_id, name, player_count, app_count, slogan, img, sm_id, type from schools
+            where sc_id in
+            <foreach collection="scIds" item="scId" open="(" close=")" separator=",">
+                #{scId}
+            </foreach>
+    </select>
+</mapper>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.blueing.sports_meet_system.mapper.IndexMapper">
+    <update id="rankPlayers">
+        update players
+        <set>
+            <if test="totalDegree!=null">total_degree=#{totalDegree},</if>
+            <if test="teamRank!=null">t_rank=#{teamRank},</if>
+            <if test="meetingRank!=null">sm_rank=#{meetingRank},</if>
+        </set>
+        where pid=#{pid} and sm_id=#{smId}
+    </update>
+    <update id="rankSchools">
+        update schools
+        <set>
+            <if test="degree!=null">degree=#{degree},</if>
+            <if test="rank!=null">a_rank=#{rank},</if>
+        </set>
+        where sc_id=#{scId}
+    </update>
+    <select id="getScoresByScIds" resultType="com.blueing.sports_meet_system.pojo.DetailScore">
+        select name as teamName, degree, a_rank as `rank` from schools
+            where sc_id in
+            <foreach collection="scIds" separator="," close=")" open="(" item="scId">
+                #{scId}
+            </foreach>
+    </select>
+
+</mapper>

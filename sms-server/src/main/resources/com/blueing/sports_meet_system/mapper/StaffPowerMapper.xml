@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.blueing.sports_meet_system.mapper.StaffPowerMapper">
+
+    <update id="modifyInviteCode">
+        update invite_code
+        <set>
+            <if test="userType!=null">power_degree=#{powerDegree},</if>
+            <if test="expireTime!=null">expire_time=#{expireTime},</if>
+        </set>
+        where code=#{code}
+    </update>
+    <update id="modifyUserSm">
+        update user_sm
+        <set>
+            <if test="userType!=null">power_degree=#{powerDegree},</if>
+        </set>
+        where uid=#{uid} and sm_id=#{smId}
+    </update>
+    <select id="getInviteCodeByUsers" resultType="com.blueing.sports_meet_system.pojo.InviteCode">
+        select code, power_degree, expire_time,sm_id from invite_code where user=#{user}
+    </select>
+
+</mapper>

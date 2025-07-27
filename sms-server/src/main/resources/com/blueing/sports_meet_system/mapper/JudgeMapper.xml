@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.blueing.sports_meet_system.mapper.JudgeMapper">
+    <insert id="addJudgeRule" useGeneratedKeys="true" keyProperty="judgeRule.rid">
+        insert into judge_rules(name, units, mappings,is_rank_mode, sm_id) value(#{judgeRule.name},#{judgeRule.units},#{judgeRule.mappings},#{judgeRule.isRankMode},#{smId});
+    </insert>
+    <insert id="addJudges">
+        insert into judges (sp_id, uid) values
+        <foreach collection="judgeUids" item="uid" separator="," close=")" open="(">
+            #{spId},#{uid}
+        </foreach>
+    </insert>
+    <update id="addRankAndDegree">
+        update application_sports
+        <set>
+            <if test="score!=null">score=#{score},</if>
+            <if test="degree!=null">degree=#{degree},</if>
+            <if test="aRank!=null">a_rank=#{aRank},</if>
+        </set>
+        where aid=#{aid}
+    </update>
+    <update id="modifyJudgeRule">
+        update judge_rules
+        <set>
+            <if test="name!=null">name=#{name},</if>
+            <if test="units!=null">units=#{units},</if>
+            <if test="isRankMode!=null">is_rank_mode=#{isRankMode},</if>
+            <if test="mappings!=null">mappings=#{mappings},</if>
+        </set>
+        where rid=#{rid}
+    </update>
+    <delete id="dropJudgeUids">
+        delete from judges where
+        sp_id=#{spId} and uid in
+        <foreach collection="judgeUids" item="uid" separator="," close=")" open="(">
+            #{uid}
+        </foreach>
+    </delete>
+    <select id="getJudgementsByUid" resultType="com.blueing.sports_meet_system.pojo.Judgement">
+        select sp_id,name,status,game_start_time,comp_type,venue,rid,event_type,gender from sports where sm_id=#{smId}
+        and sp_id in (select sp_id from judges where uid=#{uid})
+    </select>
+</mapper>
