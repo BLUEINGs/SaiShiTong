@@ -1,0 +1,73 @@
+# 编译生成的 class 文件
+*.class
+
+# 日志文件
+*.log
+
+# BlueJ 文件
+*.ctxt
+
+# Java 移动工具 (J2ME) 临时文件
+mtj.tmp/
+
+# 包文件
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# 虚拟机崩溃日志
+hs_err_pid*
+replay_pid*
+
+# Eclipse 和 IntelliJ IDEA 配置文件
+classpath
+settings/
+idea/
+*.iws
+*.iml
+*.ipr
+
+# Maven 生成的文件
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+mvn/timing.properties
+mvn/wrapper/maven-wrapper.jar
+
+# Gradle 生成的文件
+gradle/
+build/
+**/build/
+bin/
+!src/**/build/
+gradle-app.setting
+!gradle-wrapper.jar
+gradletasknamecache
+gradle/wrapper/gradle-wrapper.properties
+
+# VS Code 配置文件
+vscode/
+
+# STS 配置文件
+apt_generated
+factorypath
+springBeans
+sts4-cache
+
+# NetBeans 配置文件
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+!**/src/main/**/build/
+!**/src/test/**/build/
