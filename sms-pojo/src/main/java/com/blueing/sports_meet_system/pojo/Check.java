@@ -4,17 +4,15 @@ package com.blueing.sports_meet_system.pojo;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Check {
-    private Integer gid;
-    private Integer pid;
-    private String name;
-    private Integer track;
-    private String checkState;
-    private LocalDateTime checkBeginTime;
-    private LocalDateTime checkEndTime;
+    private ZonedDateTime checkBeginTime;
+    private ZonedDateTime checkEndTime;
+    private String venue;
+    List<Group>  checkData;
 }

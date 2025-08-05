@@ -25,5 +25,7 @@ public class Player {
     private Integer degree;
     private List<Integer> sports;
     private String sportsString;
+    private Integer track;
+    private String checkState;
 
 }
