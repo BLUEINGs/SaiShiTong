@@ -14,5 +14,5 @@ public class Check {
     private ZonedDateTime checkBeginTime;
     private ZonedDateTime checkEndTime;
     private String venue;
-    List<Group>  checkData;
+    private List<Group>  groups;
 }

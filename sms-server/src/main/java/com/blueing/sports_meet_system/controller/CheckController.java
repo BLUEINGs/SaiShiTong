@@ -20,9 +20,9 @@ public class CheckController {
     private CheckServiceA checkServiceA;
 
     @GetMapping("/chcke/noticeG")
-     public Result<Object> list(Integer spId){
+     public Result<Object> list(Integer smId,Integer spId){
         log.info("查询检录数据");
-        List<Check> checks = checkServiceA.listCheck(spId);
+        Check checks = checkServiceA.listCheck(smId,spId);
         return Result.success(checks);
     }
 }
