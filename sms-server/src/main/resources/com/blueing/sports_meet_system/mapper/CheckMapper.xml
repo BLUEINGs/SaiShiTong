@@ -3,5 +3,17 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.blueing.sports_meet_system.mapper.CheckMapper">
+    <insert id="addPlayers">
+        select name,p_class from players where pid = #{pid}
+    </insert>
+    <select id="listCheck" resultType="com.blueing.sports_meet_system.pojo.Check">
+        select check_begin_time,check_end_time,venue from sports where sm_id = #{smId} and sp_id = #{spId}
+    </select>
 
+    <select id="listGroup" resultType="com.blueing.sports_meet_system.pojo.Group">
+        select gid,name from sp_groups where sm_id = #{smId} and sp_id = #{spId}
+    </select>
+    <select id="listPlayer" resultType="com.blueing.sports_meet_system.pojo.Player">
+        select pid,track,check_state from application_sports where sm_id = #{smId} and sp_id = #{spId} and gid= #{gid}
+    </select>
 </mapper>
