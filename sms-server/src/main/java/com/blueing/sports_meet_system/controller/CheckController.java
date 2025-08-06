@@ -11,8 +11,6 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 @Slf4j
 @CrossOrigin
 @RestController
@@ -21,7 +19,7 @@ public class CheckController {
     @Autowired
     private CheckServiceA checkServiceA;
 
-    @GetMapping("/saishitong/chcke/noticeG")
+    @GetMapping("/saishitong/check/noticeG")
      public Result<Object> list(Integer smId,Integer spId){
         log.info("查询检录数据");
         Check checks = checkServiceA.listCheck(smId,spId);
