@@ -243,7 +243,7 @@ public class DepartmentServiceA implements DepartmentService {
                 String schoolName = departmentMapper.getSchoolNameByScId(scId).getName();
                 if (inviteCode.getUserType().contains(4)) {
                     //若不是负责人就添加为运动员
-                    departmentMapper.addPlayer(new Player(null, currentUser.getSmId(), currentUser.getName(), null, null, currentUser.getUid(), null, scId, null, null, schoolName, null, null, null, null));
+                    departmentMapper.addPlayer(new Player(null, currentUser.getSmId(), currentUser.getName(), null, null, currentUser.getUid(), null, scId, null, null, schoolName, null, null, null, null,null,null));
                 } else {
                     throw new InviteCodeException();
                 }
@@ -251,7 +251,7 @@ public class DepartmentServiceA implements DepartmentService {
                 if (inviteCode.getUserType().contains(2)) {
                     //若是负责人就添加为负责人
                     String schoolName = departmentMapper.getSchoolNameByScId(scId).getName();
-                    departmentMapper.addLeader(new Player(null, currentUser.getSmId(), currentUser.getName(), null, null, currentUser.getUid(), null, scId, null, null, schoolName, null, null, null, null));
+                    departmentMapper.addLeader(new Player(null, currentUser.getSmId(), currentUser.getName(), null, null, currentUser.getUid(), null, scId, null, null, schoolName, null, null, null, null,null,null));
                 }
             }
             School school = new School();
@@ -274,7 +274,7 @@ public class DepartmentServiceA implements DepartmentService {
         addSchool(school);
 //        log.info(school.toString());
         if (currentUser.getUserType().contains(2)) {
-            departmentMapper.addLeader(new Player(null, currentUser.getSmId(), currentUser.getName(), null, null, currentUser.getUid(), school.getScId(), null, null, null, school.getName(), null, null, null, null));
+            departmentMapper.addLeader(new Player(null, currentUser.getSmId(), currentUser.getName(), null, null, currentUser.getUid(), school.getScId(), null, null, null, school.getName(), null, null, null, null,null,null));
             addUserJoinedSchool(school, currentUser);
         }
     }

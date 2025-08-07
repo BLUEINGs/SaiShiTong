@@ -8,8 +8,6 @@ import com.blueing.sports_meet_system.utils.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwt;
-import com.blueing.sports_meet_system.exception.businessEception.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -57,6 +55,10 @@ public class Interceptor extends InterceptorRegistry implements HandlerIntercept
             User user = new User((Integer) claims.get("uid"), (String) claims.get("userName"), (String) claims.get("password"), null, null, null, null, null, (Integer) claims.get("smId"), null);
             currentUser.set(user);
             log.info("当前用户为{}", currentUser.get());
+            /**
+             * 这里会把token解析成User对象，该对象即前端操作的那个用户
+             * 获取该对象可以调用Interceptor类提供的静态方法getCurrentUser()，在任意类中都可以获取
+             * */
             request.setAttribute("currentUser", user);
         }catch(ExpiredJwtException e){
             log.info("登录信息已过期，请重新登录");
