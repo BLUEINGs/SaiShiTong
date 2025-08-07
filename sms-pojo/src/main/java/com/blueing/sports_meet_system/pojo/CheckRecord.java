@@ -10,7 +10,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Check {
+public class CheckRecord {
     private ZonedDateTime checkBeginTime;
     private ZonedDateTime checkEndTime;
     private String venue;
