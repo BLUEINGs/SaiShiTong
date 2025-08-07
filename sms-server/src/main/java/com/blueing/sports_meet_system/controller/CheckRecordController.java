@@ -1,10 +1,8 @@
 package com.blueing.sports_meet_system.controller;
 
-
 import com.blueing.sports_meet_system.interceptor.Interceptor;
 import com.blueing.sports_meet_system.pojo.CheckRecord;
 import com.blueing.sports_meet_system.pojo.Result;
-
 import com.blueing.sports_meet_system.pojo.User;
 import com.blueing.sports_meet_system.service.imp.CheckRecordRecordServiceA;
 import lombok.extern.slf4j.Slf4j;
@@ -16,13 +14,13 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @CrossOrigin
 @RestController
-public class CheckController {
+public class CheckRecordController {
 
     @Autowired
     private CheckRecordRecordServiceA checkRecordServiceA;
 
     @GetMapping("/saishitong/check/noticeG")
-     public Result<Object> list(Integer spId){
+     public Result<Object> queryCheckRecord(Integer spId){
         /*获取当前User*/
         User currentUser = Interceptor.getCurrentUser();
 //        log.info(currentUser.toString());
