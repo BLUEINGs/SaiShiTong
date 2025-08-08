@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -18,21 +19,25 @@ public class CheckRecordRecordServiceA implements CheckRecordService {
     private CheckRecordMapper checkRecordMapper;
 
     @Override
-    public CheckRecord queryCheckRecord(Integer smId, Integer spId) {
-        CheckRecord checkRecord = checkRecordMapper.queryCheckRecord(smId, spId);
-        List<Group> groupsList = checkRecordMapper.groupList(smId, spId);
-        for (Group group : groupsList) {
-            Integer gid = group.getGid();
-            List<Player> playersList = checkRecordMapper.playerList(smId, spId, gid);
-            for (Player player : playersList) {
-                Integer pid = player.getPid();
-                Player player1 = checkRecordMapper.queryPlayers(pid);
-                player.setName(player1.getName());
-                player.setPClass(player1.getPClass());
+    public CheckRecord queryCheckRecord(Integer smId, Integer spId, Integer eventType) {
+        CheckRecord checkRecord = null;
+        if (eventType == 1) {
+            checkRecord = checkRecordMapper.queryCheckRecord(smId, spId);
+            List<Group> groupsList = checkRecordMapper.groupList(smId, spId);
+            for (Group group : groupsList) {
+                Integer gid = group.getGid();
+                List<Player> trackplayersList = checkRecordMapper.trackPlayerList(smId, spId, gid);
+                group.setPlayers(trackplayersList);
             }
-            group.setPlayers(playersList);
+            checkRecord.setGroupsList(groupsList);
+        } else if (eventType == 2) {
+            checkRecord=checkRecordMapper.queryCheckRecord(smId, spId);
+            List<Player> fieldPlayersList = checkRecordMapper.fieldPlayerList(smId, spId);
+            Group group = new Group(0, "田赛", null, null, fieldPlayersList);
+            List<Group> groupList = new ArrayList<>();
+            groupList.add(group);
+            checkRecord.setGroupsList(groupList);
         }
-        checkRecord.setGroups(groupsList);
         return checkRecord;
     }
 }
