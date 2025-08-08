@@ -20,12 +20,12 @@ public class CheckRecordController {
     private CheckRecordRecordServiceA checkRecordServiceA;
 
     @GetMapping("/saishitong/check/noticeG")
-     public Result<Object> queryCheckRecord(Integer spId){
+     public Result<Object> queryCheckRecord(Integer spId,Integer eventType){
         /*获取当前User*/
         User currentUser = Interceptor.getCurrentUser();
 //        log.info(currentUser.toString());
         log.info("查询检录数据");
-        CheckRecord checkRecords = checkRecordServiceA.queryCheckRecord(currentUser.getSmId(), spId);
+        CheckRecord checkRecords = checkRecordServiceA.queryCheckRecord(currentUser.getSmId(), spId,eventType);
         return Result.success(checkRecords);
 //        return Result.error(checks,"异常信息");
     }
