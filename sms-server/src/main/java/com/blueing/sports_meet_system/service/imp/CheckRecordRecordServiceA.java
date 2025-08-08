@@ -20,7 +20,7 @@ public class CheckRecordRecordServiceA implements CheckRecordService {
 
     @Override
     public CheckRecord queryCheckRecord(Integer smId, Integer spId, Integer eventType) {
-        CheckRecord checkRecord = new CheckRecord();
+        CheckRecord checkRecord = null;
         if (eventType == 1) {
             checkRecord = checkRecordMapper.queryCheckRecord(smId, spId);
             List<Group> groupsList = checkRecordMapper.groupList(smId, spId);
@@ -31,9 +31,9 @@ public class CheckRecordRecordServiceA implements CheckRecordService {
             }
             checkRecord.setGroupsList(groupsList);
         } else if (eventType == 2) {
-            checkRecord = checkRecordMapper.queryCheckRecord(smId, spId);
+            checkRecord=checkRecordMapper.queryCheckRecord(smId, spId);
             List<Player> fieldPlayersList = checkRecordMapper.fieldPlayerList(smId, spId);
-            Group group = new Group(0,"田赛",null,null,fieldPlayersList);
+            Group group = new Group(0, "田赛", null, null, fieldPlayersList);
             List<Group> groupList = new ArrayList<>();
             groupList.add(group);
             checkRecord.setGroupsList(groupList);
