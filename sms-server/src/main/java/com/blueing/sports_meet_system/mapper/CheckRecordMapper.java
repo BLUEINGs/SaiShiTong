@@ -18,4 +18,6 @@ public interface CheckRecordMapper {
 
 
     List<Player> fieldPlayerList(Integer smId,Integer spId );
+
+    void modifyCheckStatus(Integer spId,Integer eventType,Integer state);
 }

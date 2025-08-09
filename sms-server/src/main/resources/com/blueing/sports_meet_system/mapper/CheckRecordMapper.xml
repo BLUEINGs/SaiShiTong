@@ -3,6 +3,7 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.blueing.sports_meet_system.mapper.CheckRecordMapper">
+
     <select id="queryCheckRecord" resultType="com.blueing.sports_meet_system.pojo.CheckRecord">
         select check_begin_time,check_end_time,venue from sports where sm_id = #{smId} and sp_id = #{spId}
     </select>
@@ -18,4 +19,7 @@
         select a.pid,p.name,p.p_class, a.check_state from application_sports a left join players p on a.pid = p.pid
         where a.sm_id = #{smId} and a.sp_id = #{spId}
     </select>
+    <update id="modifyCheckStatus">
+
+    </update>
 </mapper>

@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
@@ -28,6 +29,12 @@ public class CheckRecordController {
         CheckRecord checkRecords = checkRecordServiceA.queryCheckRecord(currentUser.getSmId(), spId,eventType);
         return Result.success(checkRecords);
 //        return Result.error(checks,"异常信息");
+    }
+
+    @PutMapping("/saishitong/check/state")
+    public Result<Object> modifyCheckStatus(Integer spId,Integer eventType,Integer state){
+        checkRecordServiceA.modifyCheckStatus(spId,eventType,state);
+        return Result.success(null);
     }
 
 }

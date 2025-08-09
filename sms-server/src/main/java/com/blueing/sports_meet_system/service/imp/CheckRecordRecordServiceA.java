@@ -40,4 +40,9 @@ public class CheckRecordRecordServiceA implements CheckRecordService {
         }
         return checkRecord;
     }
+
+    @Override
+    public void modifyCheckStatus(Integer spId, Integer eventType, Integer state) {
+        checkRecordMapper.modifyCheckStatus(spId, eventType, state);
+    }
 }
