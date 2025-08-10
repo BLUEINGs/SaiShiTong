@@ -42,7 +42,7 @@ public class CheckRecordRecordServiceA implements CheckRecordService {
     }
 
     @Override
-    public void modifyCheckStatus(Integer spId, Integer eventType, Integer state) {
-        checkRecordMapper.modifyCheckStatus(spId, eventType, state);
+    public void modifyCheckStatus(Integer smId,Integer spId, Integer pid, Integer checkState) {
+        checkRecordMapper.modifyCheckStatus(smId,spId, pid,checkState);
     }
 }

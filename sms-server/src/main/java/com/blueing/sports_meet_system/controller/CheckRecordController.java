@@ -32,8 +32,9 @@ public class CheckRecordController {
     }
 
     @PutMapping("/saishitong/check/state")
-    public Result<Object> modifyCheckStatus(Integer spId,Integer eventType,Integer state){
-        checkRecordServiceA.modifyCheckStatus(spId,eventType,state);
+    public Result<Object> modifyCheckStatus(Integer spId,Integer pid,Integer state){
+        User currentUser = Interceptor.getCurrentUser();
+        checkRecordServiceA.modifyCheckStatus(currentUser.getSmId(),spId,pid,state);
         return Result.success(null);
     }
 
