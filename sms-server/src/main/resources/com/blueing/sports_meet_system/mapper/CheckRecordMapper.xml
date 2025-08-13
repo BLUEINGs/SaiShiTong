@@ -18,4 +18,11 @@
         select a.pid,p.name,p.p_class, a.check_state from application_sports a left join players p on a.pid = p.pid
         where a.sm_id = #{smId} and a.sp_id = #{spId}
     </select>
+    <update id="modifyCheckStatus">
+        update application_sports set check_state = #{checkState} where sm_id = #{smId} and sp_id = #{spId} and pid = #{pid}
+    </update>
+
+    <update id="addTrack">
+        update application_sports set track = #{track} where sm_id = #{smId} and sp_id = #{spId} and pid = #{pid}
+    </update>
 </mapper>

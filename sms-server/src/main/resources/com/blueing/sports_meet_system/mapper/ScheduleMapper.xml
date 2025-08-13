@@ -9,6 +9,8 @@
             <if test="gameStartTime!=null">game_start_time=#{gameStartTime},</if>
             <if test="gameEndTime!=null">game_end_time=#{gameEndTime},</if>
             <if test="venue!=null">venue=#{venue},</if>
+            <if test="checkBeginTime!=null">check_begin_time=#{checkBeginTime}</if>
+            <if test="checkEndTime!=null">check_end_time=#{checkEndTime}</if>
         </set>
         where sp_id=#{spId}
     </update>
