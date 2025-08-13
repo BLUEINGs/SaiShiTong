@@ -23,18 +23,28 @@ public class CheckRecordController {
     @GetMapping("/saishitong/check/noticeG")
      public Result<Object> queryCheckRecord(Integer spId,Integer eventType){
         /*获取当前User*/
+        log.info("查询检录数据");
         User currentUser = Interceptor.getCurrentUser();
 //        log.info(currentUser.toString());
-        log.info("查询检录数据");
+
         CheckRecord checkRecords = checkRecordServiceA.queryCheckRecord(currentUser.getSmId(), spId,eventType);
         return Result.success(checkRecords);
 //        return Result.error(checks,"异常信息");
     }
 
     @PutMapping("/saishitong/check/state")
-    public Result<Object> modifyCheckStatus(Integer spId,Integer pid,Integer state){
+    public Result<Object> modifyCheckStatus(Integer spId,Integer pid,Integer checkState){
+        log.info("修改检录状态");
         User currentUser = Interceptor.getCurrentUser();
-        checkRecordServiceA.modifyCheckStatus(currentUser.getSmId(),spId,pid,state);
+        checkRecordServiceA.modifyCheckStatus(currentUser.getSmId(),spId,pid,checkState);
+        return Result.success(null);
+    }
+
+    @PutMapping("/saishitong/check/drawing")
+    public Result<Object> addTrack(Integer spId,Integer gid){
+        log.info("添加田径赛道");
+        User currentUser = Interceptor.getCurrentUser();
+        checkRecordServiceA.addTrack(currentUser.getSmId(),spId,gid);
         return Result.success(null);
     }
 
