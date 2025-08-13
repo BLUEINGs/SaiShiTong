@@ -167,8 +167,8 @@ public class AutoArrangeDuration {
                     }
                 }
                 sport.setGameStartTime(currentTime);
-                sport.setCheckBeginTime(currentTime.plusMinutes(30));
-                sport.setCheckEndTime(currentTime.plusMinutes(5));
+                sport.setCheckBeginTime(currentTime.minusMinutes(30));
+                sport.setCheckEndTime(currentTime.minusMinutes(5));
 //                assert currentTime != null;//断言能干啥？
                 sport.setGameEndTime(gameEndTime);
                 currentTime = gameEndTime;
@@ -224,8 +224,8 @@ public class AutoArrangeDuration {
             }
             sport.setGameStartTime(currentTime);
 //                assert currentTime != null;//断言能干啥？
-            sport.setCheckBeginTime(currentTime.plusMinutes(30));
-            sport.setCheckEndTime(currentTime.plusMinutes(5));
+            sport.setCheckBeginTime(currentTime.minusMinutes(30));
+            sport.setCheckEndTime(currentTime.minusMinutes(5));
             sport.setGameEndTime(gameEndTime);
             currentTime = gameEndTime;
             log.info("当前遍历到径赛{},{}",sport.getSpId(),sport.getName());
