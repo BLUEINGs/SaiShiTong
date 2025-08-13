@@ -60,37 +60,16 @@ public class CheckRecordRecordServiceA implements CheckRecordService {
             brr[i] = player.getPid();
             i++;
         }
-        int num1 = 0;
-        int num2 = 0;
-        int count = 0;
         Random r = new Random();
-        for (int j = 0; j < 10; j++) {
-            for (int k = 0; k < i+1; k++) {
-                if (k == 0) {
-                    num1 = r.nextInt(100 )+1;
-                    num2 = r.nextInt(100 )+1;
-                } else if (k==i) {
-                    break;
-                } else {
-                    if (count == 0) {
-                        num1 = num2;
-                        num2 = r.nextInt(100 )+1;
-                    } else {
-                        num2 = r.nextInt(100 )+1;
-                    }
-                }
-                if (num1 > num2) {
-                    count = 0;
-                } else {
-                    int pid = brr[k];
-                    brr[k] = brr[k + 1];
-                    brr[k + 1] = pid;
-                    count = 1;
-                }
-            }
+
+        for (int j = 0; j < i+1; j++) {
+            int num=r.nextInt(i+1);
+            int count=brr[j];
+            brr[j] = brr[num];
+            brr[num] = count;
         }
-        for (int j = i; j >=0; j--) {
-            checkRecordMapper.addTrack(smId, spId, brr[j], arr[j]);
+        for (int u = i; u >=0; u--) {
+            checkRecordMapper.addTrack(smId, spId, brr[u], arr[u]);
         }
     }
 }
