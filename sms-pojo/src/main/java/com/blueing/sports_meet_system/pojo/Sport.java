@@ -32,6 +32,8 @@ public class Sport {
     private String venue;
     private Integer status;
     private Integer smId;
+    private ZonedDateTime checkBeginTime;
+    private ZonedDateTime checkEndTime;
 
     public Sport(Integer compType, Integer countPgp, String venue, Boolean riseType, Integer riseCount) {
         this.compType = compType;
