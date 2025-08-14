@@ -4,7 +4,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.blueing.sports_meet_system.mapper.BasketballGameMapper">
     <insert id="addScoringSituation">
-        insert into scoring_situation(cid,scoring_time,one,two,three) value(#{cid},#{scoringTime},#{one},#{two},#{three})
+        insert into scoring_situation(cid,scoring_time,score) value(#{cid},#{scoringTime},#{score})
     </insert>
     <update id="modifyTeamScores">
         update scoring_record set score=#{score} where cid=#{cid}
