@@ -23,11 +23,11 @@ public class BasketballGameServiceA implements BasketballGameService {
         basketballGameMapper.modifyTeamScores(cid,score);
         ZonedDateTime zonedNow = ZonedDateTime.now();
         if (fraction == 1) {
-            basketballGameMapper.addScoringSituation(cid,zonedNow,fraction,0,0);
+            basketballGameMapper.addScoringSituation(cid,zonedNow,1,0,0);
         } else if (fraction == 2) {
-            basketballGameMapper.addScoringSituation(cid,zonedNow,0,fraction,0);
+            basketballGameMapper.addScoringSituation(cid,zonedNow,0,1,0);
         }else if (fraction == 3) {
-            basketballGameMapper.addScoringSituation(cid,zonedNow,0,0,fraction);
+            basketballGameMapper.addScoringSituation(cid,zonedNow,0,0,1);
         }
     }
 }
