@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 
 @Service
 public class BasketballGameServiceA implements BasketballGameService {
@@ -15,13 +16,51 @@ public class BasketballGameServiceA implements BasketballGameService {
 
 
     @Override
-    public void addfraction(Integer cid,Integer fraction) {
-        BasketballGame basketballGame = basketballGameMapper.queryTeamScores(cid);
+    public void addfraction(Integer teId,Integer fraction) {
+        BasketballGame basketballGame = basketballGameMapper.queryScores(teId);
         Integer score = basketballGame.getScore();
         score = score + fraction;
         basketballGame.setScore(score);
-        basketballGameMapper.modifyTeamScores(cid,score);
+        basketballGameMapper.modifyTeamScores(teId,score);
         ZonedDateTime zonedNow = ZonedDateTime.now();
-            basketballGameMapper.addScoringSituation(cid,zonedNow,fraction);
+            basketballGameMapper.addScoringSituation(teId,zonedNow,fraction);
+    }
+
+    @Override
+    public void addbasketballGame(String nameA, String nameB,
+                                     ZonedDateTime startTime1,ZonedDateTime endTime1,
+                                     ZonedDateTime startTime2,ZonedDateTime endTime2,
+                                     ZonedDateTime startTime3,ZonedDateTime endTime3,
+                                     ZonedDateTime startTime4,ZonedDateTime endTime4) {
+
+        Integer spId = basketballGameMapper.addBasketballs(startTime1, endTime4);
+        basketballGameMapper.addBasDuration(spId,startTime1,endTime1,1);
+        basketballGameMapper.addBasDuration(spId,startTime2,endTime2,2);
+        basketballGameMapper.addBasDuration(spId,startTime3,endTime3,3);
+        basketballGameMapper.addBasDuration(spId,startTime4,endTime4,4);
+        basketballGameMapper.addContingent(spId,nameA);
+        basketballGameMapper.addContingent(spId,nameB);
+    }
+
+    @Override
+    public List<BasketballGame> queryTeamScoringDetailsRecord(Integer spId) {
+        List<BasketballGame> contingents = basketballGameMapper.queryContingent(spId);
+        for (BasketballGame contingent : contingents) {
+            Integer teId = contingent.getTeId();
+            contingent.setBasketballGames(basketballGameMapper.queryScoreRecords(teId));
+        }
+        return contingents;
+    }
+
+    @Override
+    public List<BasketballGame> queryTeamScores(Integer spId) {
+        List<BasketballGame> teamScores = basketballGameMapper.queryTeamScores(spId);
+        return teamScores;
+    }
+
+    @Override
+    public List<BasketballGame> queryBasketballEvent() {
+        List<BasketballGame> BasketballEvents = basketballGameMapper.queryBasketballEvent();
+        return BasketballEvents;
     }
 }

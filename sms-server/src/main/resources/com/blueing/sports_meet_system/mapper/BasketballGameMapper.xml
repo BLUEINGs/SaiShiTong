@@ -4,13 +4,35 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.blueing.sports_meet_system.mapper.BasketballGameMapper">
     <insert id="addScoringSituation">
-        insert into scoring_situation(cid,scoring_time,score) value(#{cid},#{scoringTime},#{score})
+        insert into score_records(te_id,scoring_time,score) value(#{teId},#{scoringTime},#{score})
+    </insert>
+    <insert id="addBasketballs">
+        insert into basketballs(start_time, end_time) values (#{startTime},#{endTime});
+        SELECT LAST_INSERT_ID()
+    </insert>
+    <insert id="addBasDuration">
+        insert into bas_duration(sp_id, start_time, end_time, type) values (#{spId},#{startTime},#{endTime},#{type})
+    </insert>
+    <insert id="addContingent">
+        insert into team_score(sp_id, name) values (#{spId},#{name})
     </insert>
     <update id="modifyTeamScores">
-        update scoring_record set score=#{score} where cid=#{cid}
+        update team_score set score=#{score} where te_id=#{teId}
     </update>
 
+    <select id="queryScores" resultType="com.blueing.sports_meet_system.pojo.BasketballGame">
+        select score from team_score where te_id=#{teId}
+    </select>
+    <select id="queryContingent" resultType="com.blueing.sports_meet_system.pojo.BasketballGame">
+        select te_id,name from team_score where sp_id=#{spId}
+    </select>
+    <select id="queryScoreRecords" resultType="com.blueing.sports_meet_system.pojo.BasketballGame">
+        select scoring_time,score from score_records where te_id=#{teId}
+    </select>
     <select id="queryTeamScores" resultType="com.blueing.sports_meet_system.pojo.BasketballGame">
-        select score from scoring_record where cid=#{cid}
+        select te_id,name,score from team_score where sp_id=#{spId}
+    </select>
+    <select id="queryBasketballEvent" resultType="com.blueing.sports_meet_system.pojo.BasketballGame">
+        select * from basketballs
     </select>
 </mapper>

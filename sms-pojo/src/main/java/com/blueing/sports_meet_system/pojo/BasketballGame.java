@@ -5,17 +5,18 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class BasketballGame {
     private Integer spId;
-    private Integer cid;
+    private Integer teId;
     private String name;
     private ZonedDateTime scoringTime;
-    private Integer one;
-    private Integer two;
-    private Integer three;
+    private ZonedDateTime startTime;
+    private ZonedDateTime endTime;
     private Integer Score;
+    List<BasketballGame>  basketballGames;
 }
