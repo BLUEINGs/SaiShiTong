@@ -18,5 +18,6 @@ public class BasketballGame {
     private ZonedDateTime startTime;
     private ZonedDateTime endTime;
     private Integer Score;
+    private Integer type;
     List<BasketballGame>  basketballGames;
 }
