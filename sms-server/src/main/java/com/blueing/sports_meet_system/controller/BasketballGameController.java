@@ -21,13 +21,13 @@ public class BasketballGameController {
     BasketballGameServiceA basketballGameServiceA;
 
     @PostMapping("/saishitong/basketballGame/information")
-    public Result<Object> addbasketballGame(String nameA, String nameB,
+    public Result<Object> addbasketballGame(String nameA,String rgbA, String nameB,String rgbB,
                                   ZonedDateTime startTime1,ZonedDateTime endTime1,
                                   ZonedDateTime startTime2,ZonedDateTime endTime2,
                                   ZonedDateTime startTime3,ZonedDateTime endTime3,
                                   ZonedDateTime startTime4,ZonedDateTime endTime4) {
 
-        basketballGameServiceA.addbasketballGame( nameA,  nameB, startTime1, endTime1, startTime2, endTime2, startTime3, endTime3, startTime4, endTime4);
+        basketballGameServiceA.addbasketballGame(nameA,rgbA,nameB,rgbB, startTime1, endTime1, startTime2, endTime2, startTime3, endTime3, startTime4, endTime4);
         return Result.success(null);
     }
 

@@ -27,7 +27,7 @@ public class BasketballGameServiceA implements BasketballGameService {
     }
 
     @Override
-    public void addbasketballGame(String nameA, String nameB,
+    public void addbasketballGame(String nameA,String rgbA, String nameB,String rgbB,
                                      ZonedDateTime startTime1,ZonedDateTime endTime1,
                                      ZonedDateTime startTime2,ZonedDateTime endTime2,
                                      ZonedDateTime startTime3,ZonedDateTime endTime3,
@@ -38,8 +38,8 @@ public class BasketballGameServiceA implements BasketballGameService {
         basketballGameMapper.addBasDuration(spId,startTime2,endTime2,2);
         basketballGameMapper.addBasDuration(spId,startTime3,endTime3,3);
         basketballGameMapper.addBasDuration(spId,startTime4,endTime4,4);
-        basketballGameMapper.addContingent(spId,nameA);
-        basketballGameMapper.addContingent(spId,nameB);
+        basketballGameMapper.addContingent(spId,nameA,rgbA);
+        basketballGameMapper.addContingent(spId,nameB,rgbB);
     }
 
     @Override

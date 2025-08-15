@@ -14,7 +14,7 @@
         insert into bas_duration(sp_id, start_time, end_time, type) values (#{spId},#{startTime},#{endTime},#{type})
     </insert>
     <insert id="addContingent">
-        insert into team_score(sp_id, name) values (#{spId},#{name})
+        insert into team_score(sp_id, name,rgb) values (#{spId},#{name},#{rgb})
     </insert>
     <update id="modifyTeamScores">
         update team_score set score=#{score} where te_id=#{teId}
