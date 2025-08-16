@@ -19,11 +19,13 @@ public interface BasketballGameMapper {
 
     void addBasDuration(Integer spId,ZonedDateTime startTime, ZonedDateTime endTime,Integer type);
 
-    void addContingent(Integer spId,String name);
+    void addContingent(Integer spId,String name,String rgb);
 
     List<BasketballGame> queryContingent(Integer spId);
 
     List<BasketballGame> queryScoreRecords(Integer teId);
 
     List<BasketballGame> queryBasketballEvent();
+
+    List<BasketballGame> queryAiContingent(Integer spId);
 }

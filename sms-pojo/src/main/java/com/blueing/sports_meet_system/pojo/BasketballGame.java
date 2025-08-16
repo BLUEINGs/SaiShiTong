@@ -14,6 +14,7 @@ public class BasketballGame {
     private Integer spId;
     private Integer teId;
     private String name;
+    private String rgb;
     private ZonedDateTime scoringTime;
     private ZonedDateTime startTime;
     private ZonedDateTime endTime;

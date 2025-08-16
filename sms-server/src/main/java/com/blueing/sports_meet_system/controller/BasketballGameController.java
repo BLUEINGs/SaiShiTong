@@ -21,13 +21,13 @@ public class BasketballGameController {
     BasketballGameServiceA basketballGameServiceA;
 
     @PostMapping("/saishitong/basketballGame/information")
-    public Result<Object> addbasketballGame(String nameA, String nameB,
+    public Result<Object> addbasketballGame(String nameA,String rgbA, String nameB,String rgbB,
                                   ZonedDateTime startTime1,ZonedDateTime endTime1,
                                   ZonedDateTime startTime2,ZonedDateTime endTime2,
                                   ZonedDateTime startTime3,ZonedDateTime endTime3,
                                   ZonedDateTime startTime4,ZonedDateTime endTime4) {
 
-        basketballGameServiceA.addbasketballGame( nameA,  nameB, startTime1, endTime1, startTime2, endTime2, startTime3, endTime3, startTime4, endTime4);
+        basketballGameServiceA.addbasketballGame(nameA,rgbA,nameB,rgbB, startTime1, endTime1, startTime2, endTime2, startTime3, endTime3, startTime4, endTime4);
         return Result.success(null);
     }
 
@@ -47,6 +47,24 @@ public class BasketballGameController {
     public Result<Object> queryBasketballEvent(){
         List<BasketballGame> BasketballEvents = basketballGameServiceA.queryBasketballEvent();
         return Result.success(BasketballEvents);
+    }
+
+    @PostMapping("/saishitong/ai/teamScores")
+    public Result<Object> addAiTeamScore(Integer teId,Integer fraction){
+        basketballGameServiceA.addfraction(teId,fraction);
+        return Result.success(null);
+    }
+
+    @GetMapping("/saishitong/ai/basketballEvent")
+    public Result<Object> queryAiBasketballEvent(){
+        List<BasketballGame> BasketballEvents = basketballGameServiceA.queryBasketballEvent();
+        return Result.success(BasketballEvents);
+    }
+
+    @GetMapping("/saishitong/ai/contingent")
+    public Result<Object> queryAiContingent(Integer spId){
+        List<BasketballGame> contingents = basketballGameServiceA.queryAiContingent(spId);
+        return Result.success(contingents);
     }
 
 }
