@@ -28,4 +28,6 @@ public interface BasketballGameMapper {
     List<BasketballGame> queryBasketballEvent();
 
     List<BasketballGame> queryAiContingent(Integer spId);
+
+    List<BasketballGame> querySchedule(Integer spId);
 }
