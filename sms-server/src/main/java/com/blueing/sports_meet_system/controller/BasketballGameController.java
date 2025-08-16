@@ -67,4 +67,16 @@ public class BasketballGameController {
         return Result.success(contingents);
     }
 
+    @GetMapping("/saishitong/ai/schedule")
+    public Result<Object> queryAiSchedule(Integer spId){
+        BasketballGame basketballGame = basketballGameServiceA.querySchedule(spId);
+        return Result.success(basketballGame);
+    }
+
+    @GetMapping("/saishitong/schedule")
+    public Result<Object> queryschedule(Integer spId){
+        BasketballGame basketballGame = basketballGameServiceA.querySchedule(spId);
+        return Result.success(basketballGame);
+    }
+
 }

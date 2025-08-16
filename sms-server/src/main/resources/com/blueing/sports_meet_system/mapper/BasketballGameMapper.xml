@@ -38,4 +38,7 @@
     <select id="queryAiContingent" resultType="com.blueing.sports_meet_system.pojo.BasketballGame">
         select te_id,rgb from team_score where sp_id=#{spId}
     </select>
+    <select id="querySchedule" resultType="com.blueing.sports_meet_system.pojo.BasketballGame">
+        select type,start_time,end_time from bas_duration where sp_id=#{spId}
+    </select>
 </mapper>

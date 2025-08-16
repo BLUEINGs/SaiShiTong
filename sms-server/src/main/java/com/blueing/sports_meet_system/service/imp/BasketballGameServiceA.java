@@ -66,4 +66,13 @@ public class BasketballGameServiceA implements BasketballGameService {
     public List<BasketballGame> queryAiContingent(Integer spId) {
         return basketballGameMapper.queryAiContingent(spId);
     }
+
+    @Override
+    public BasketballGame querySchedule(Integer spId) {
+        List<BasketballGame> schedules = basketballGameMapper.querySchedule(spId);
+        BasketballGame basketballGame = new BasketballGame();
+        basketballGame.setSpId(spId);
+        basketballGame.setBasketballGames(schedules);
+        return basketballGame;
+    }
 }
