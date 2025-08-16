@@ -16,30 +16,30 @@ public class BasketballGameServiceA implements BasketballGameService {
 
 
     @Override
-    public void addfraction(Integer teId,Integer fraction) {
+    public void addfraction(Integer teId, Integer fraction) {
         BasketballGame basketballGame = basketballGameMapper.queryScores(teId);
         Integer score = basketballGame.getScore();
         score = score + fraction;
         basketballGame.setScore(score);
-        basketballGameMapper.modifyTeamScores(teId,score);
+        basketballGameMapper.modifyTeamScores(teId, score);
         ZonedDateTime zonedNow = ZonedDateTime.now();
-            basketballGameMapper.addScoringSituation(teId,zonedNow,fraction);
+        basketballGameMapper.addScoringSituation(teId, zonedNow, fraction);
     }
 
     @Override
-    public void addbasketballGame(String nameA,String rgbA, String nameB,String rgbB,
-                                     ZonedDateTime startTime1,ZonedDateTime endTime1,
-                                     ZonedDateTime startTime2,ZonedDateTime endTime2,
-                                     ZonedDateTime startTime3,ZonedDateTime endTime3,
-                                     ZonedDateTime startTime4,ZonedDateTime endTime4) {
+    public void addbasketballGame(String nameA, String rgbA, String nameB, String rgbB,
+                                  ZonedDateTime startTime1, ZonedDateTime endTime1,
+                                  ZonedDateTime startTime2, ZonedDateTime endTime2,
+                                  ZonedDateTime startTime3, ZonedDateTime endTime3,
+                                  ZonedDateTime startTime4, ZonedDateTime endTime4) {
 
         Integer spId = basketballGameMapper.addBasketballs(startTime1, endTime4);
-        basketballGameMapper.addBasDuration(spId,startTime1,endTime1,1);
-        basketballGameMapper.addBasDuration(spId,startTime2,endTime2,2);
-        basketballGameMapper.addBasDuration(spId,startTime3,endTime3,3);
-        basketballGameMapper.addBasDuration(spId,startTime4,endTime4,4);
-        basketballGameMapper.addContingent(spId,nameA,rgbA);
-        basketballGameMapper.addContingent(spId,nameB,rgbB);
+        basketballGameMapper.addBasDuration(spId, startTime1, endTime1, 1);
+        basketballGameMapper.addBasDuration(spId, startTime2, endTime2, 2);
+        basketballGameMapper.addBasDuration(spId, startTime3, endTime3, 3);
+        basketballGameMapper.addBasDuration(spId, startTime4, endTime4, 4);
+        basketballGameMapper.addContingent(spId, nameA, rgbA);
+        basketballGameMapper.addContingent(spId, nameB, rgbB);
     }
 
     @Override
@@ -64,7 +64,6 @@ public class BasketballGameServiceA implements BasketballGameService {
 
     @Override
     public List<BasketballGame> queryAiContingent(Integer spId) {
-
         return basketballGameMapper.queryAiContingent(spId);
     }
 }
