@@ -18,4 +18,6 @@ public interface BasketballGameService {
     List<BasketballGame> queryTeamScores(Integer spId);
 
     List<BasketballGame> queryBasketballEvent();
+
+    List<BasketballGame> queryAiContingent(Integer spId);
 }

@@ -35,4 +35,7 @@
     <select id="queryBasketballEvent" resultType="com.blueing.sports_meet_system.pojo.BasketballGame">
         select * from basketballs
     </select>
+    <select id="queryAiContingent" resultType="com.blueing.sports_meet_system.pojo.BasketballGame">
+        select te_id,rgb from team_score where sp_id=#{spId}
+    </select>
 </mapper>

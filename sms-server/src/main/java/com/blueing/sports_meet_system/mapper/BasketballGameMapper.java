@@ -26,4 +26,6 @@ public interface BasketballGameMapper {
     List<BasketballGame> queryScoreRecords(Integer teId);
 
     List<BasketballGame> queryBasketballEvent();
+
+    List<BasketballGame> queryAiContingent(Integer spId);
 }

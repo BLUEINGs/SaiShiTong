@@ -54,13 +54,17 @@ public class BasketballGameServiceA implements BasketballGameService {
 
     @Override
     public List<BasketballGame> queryTeamScores(Integer spId) {
-        List<BasketballGame> teamScores = basketballGameMapper.queryTeamScores(spId);
-        return teamScores;
+        return basketballGameMapper.queryTeamScores(spId);
     }
 
     @Override
     public List<BasketballGame> queryBasketballEvent() {
-        List<BasketballGame> BasketballEvents = basketballGameMapper.queryBasketballEvent();
-        return BasketballEvents;
+        return basketballGameMapper.queryBasketballEvent();
+    }
+
+    @Override
+    public List<BasketballGame> queryAiContingent(Integer spId) {
+
+        return basketballGameMapper.queryAiContingent(spId);
     }
 }

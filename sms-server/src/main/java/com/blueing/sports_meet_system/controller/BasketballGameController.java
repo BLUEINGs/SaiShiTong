@@ -49,4 +49,22 @@ public class BasketballGameController {
         return Result.success(BasketballEvents);
     }
 
+    @PostMapping("/saishitong/ai/teamScores")
+    public Result<Object> addAiTeamScore(Integer teId,Integer fraction){
+        basketballGameServiceA.addfraction(teId,fraction);
+        return Result.success(null);
+    }
+
+    @GetMapping("/saishitong/ai/basketballEvent")
+    public Result<Object> queryAiBasketballEvent(){
+        List<BasketballGame> BasketballEvents = basketballGameServiceA.queryBasketballEvent();
+        return Result.success(BasketballEvents);
+    }
+
+    @GetMapping("/saishitong/ai/contingent")
+    public Result<Object> queryAiContingent(Integer spId){
+        List<BasketballGame> contingents = basketballGameServiceA.queryAiContingent(spId);
+        return Result.success(contingents);
+    }
+
 }
