@@ -18,7 +18,25 @@ public class BasketballGame {
     private ZonedDateTime scoringTime;
     private ZonedDateTime startTime;
     private ZonedDateTime endTime;
-    private Integer Score;
+    private Integer score;
     private Integer type;
+    private Integer state;
     List<BasketballGame>  basketballGames;
+
+    @Override
+    public String toString() {
+        return "{" +
+                "basketballGames=" + basketballGames +
+                ", spId=" + spId +
+                ", teId=" + teId +
+                ", name='" + name + '\'' +
+                ", rgb='" + rgb + '\'' +
+                ", scoringTime=" + scoringTime +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                ", score=" + score +
+                ", type=" + type +
+                ", state=" + state +
+                '}';
+    }
 }
