@@ -21,7 +21,7 @@ public class AutoArrangeGroup {
     @Autowired
     private SportMapper sportMapper;
 
-    @Scheduled(fixedDelay = 60 * 1000 * 5)
+    // @Scheduled(fixedDelay = 60 * 1000 * 5)
     public synchronized void timer() {
         log.info("即将开始进行自动分组");
         List<Sport> noArrangeSports = sportMapper.getNoArrangeSports(ZonedDateTime.now());
