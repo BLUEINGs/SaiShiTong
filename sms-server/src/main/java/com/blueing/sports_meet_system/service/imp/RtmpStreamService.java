@@ -36,7 +36,7 @@ public class RtmpStreamService {
                 while(isRunning){
                     Frame frame = grabber.grab();
                     if (frame==null) break;
-
+                    //test
 
                 }
             } catch (FFmpegFrameGrabber.Exception e) {
