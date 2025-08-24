@@ -3,6 +3,7 @@ package com.blueing.sports_meet_system.service.imp;
 import ai.onnxruntime.*;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import org.bytedeco.javacv.OpenCVFrameConverter;
 import org.bytedeco.opencv.opencv_core.Mat;
 import org.springframework.stereotype.Service;
 import org.bytedeco.javacv.Frame;
@@ -46,7 +47,9 @@ public class DetectorServiceA {
 
     private static float[] preprocess(Frame frame,int inputWidth,int inputHeight){
         // Frame->Mat ，Mat类是OpenCV图像类
-        // Mat srcMat=
+        OpenCVFrameConverter.ToMat toMat = new OpenCVFrameConverter.ToMat();
+
+        // Mat srcMat=不应该啊淦
         return null;
     }
 

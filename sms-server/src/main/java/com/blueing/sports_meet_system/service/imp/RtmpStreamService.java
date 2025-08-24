@@ -36,7 +36,7 @@ public class RtmpStreamService {
                 while(isRunning){
                     Frame frame = grabber.grab();
                     if (frame==null) break;
-
+                    // 怎么推不上淦
 
                 }
             } catch (FFmpegFrameGrabber.Exception e) {
