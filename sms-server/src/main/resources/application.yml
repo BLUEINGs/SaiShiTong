@@ -11,6 +11,7 @@ spring:
       max-file-size: 10MB
       max-request-size: 100MB
 
+
 mybatis:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
@@ -27,3 +28,5 @@ oss:
 logging:
   level:
     org.springframework.jdbc.support.JdbcTransactionManager: debug;
+server:
+  port: 8081

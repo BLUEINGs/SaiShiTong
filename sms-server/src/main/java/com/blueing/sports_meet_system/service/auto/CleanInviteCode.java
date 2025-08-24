@@ -15,7 +15,7 @@ public class CleanInviteCode {
     @Autowired
     StaffPowerMapper staffPowerMapper;
 
-    @Scheduled(fixedDelay=60*1000*5)
+    // @Scheduled(fixedDelay=60*1000*5)
     public void clearInviteCode(){
         log.info("即将清理过期邀请码");
         int count = staffPowerMapper.clearExpiredInviteCode(ZonedDateTime.now());

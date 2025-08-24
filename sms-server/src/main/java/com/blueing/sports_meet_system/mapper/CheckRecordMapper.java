@@ -13,9 +13,7 @@ public interface CheckRecordMapper {
 
     List<Group> groupList(Integer smId,Integer spId);
 
-
     List<Player> trackPlayerList(Integer smId,Integer spId ,Integer gid);
-
 
     List<Player> fieldPlayerList(Integer smId,Integer spId );
 
