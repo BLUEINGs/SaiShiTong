@@ -41,4 +41,7 @@
     <select id="querySchedule" resultType="com.blueing.sports_meet_system.pojo.BasketballGame">
         select type,start_time,end_time from bas_duration where sp_id=#{spId}
     </select>
+    <select id="queryAllTeamsScore" resultType="com.blueing.sports_meet_system.pojo.BasketballGame">
+        select * from team_score;
+    </select>
 </mapper>
