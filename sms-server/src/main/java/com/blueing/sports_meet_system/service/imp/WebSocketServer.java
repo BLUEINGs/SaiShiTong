@@ -81,4 +81,17 @@ public class WebSocketServer {
         }
     }
 
+    public void sendToAllClient(String json) {
+        Collection<Session> sessions = sessionMap.values();
+
+        for (Session session : sessions) {
+            try {
+                //服务器向客户端发送消息
+                session.getBasicRemote().sendText(json);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 }
