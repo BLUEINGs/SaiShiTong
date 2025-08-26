@@ -1,7 +1,7 @@
 package com.blueing.sports_meet_system.service;
 
 
-import com.blueing.sports_meet_system.pojo.BasketballGame;
+import com.blueing.sports_meet_system.pojo.BasketballRecords;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -13,13 +13,13 @@ public interface BasketballGameService {
                               ZonedDateTime startTime3,ZonedDateTime endTime3,
                               ZonedDateTime startTime4,ZonedDateTime endTime4);
 
-    List<BasketballGame> queryTeamScoringDetailsRecord(Integer spId);
+    List<BasketballRecords> queryTeamScoringDetailsRecord(Integer spId);
 
-    List<BasketballGame> queryTeamScores(Integer spId);
+    List<BasketballRecords> queryTeamScores(Integer spId);
 
-    List<BasketballGame> queryBasketballEvent();
+    List<BasketballRecords> queryBasketballEvent();
 
-    List<BasketballGame> queryAiContingent(Integer spId);
+    List<BasketballRecords> queryAiContingent(Integer spId);
 
-    BasketballGame querySchedule(Integer spId);
+    BasketballRecords querySchedule(Integer spId);
 }

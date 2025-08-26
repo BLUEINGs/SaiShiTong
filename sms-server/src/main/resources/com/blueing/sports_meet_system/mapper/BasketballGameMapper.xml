@@ -20,25 +20,28 @@
         update team_score set score=#{score} where te_id=#{teId}
     </update>
 
-    <select id="querySpidScores" resultType="com.blueing.sports_meet_system.pojo.BasketballGame">
+    <select id="querySpidScores" resultType="com.blueing.sports_meet_system.pojo.BasketballRecords">
         select sp_id,score from team_score where te_id=#{teId}
     </select>
-    <select id="queryContingent" resultType="com.blueing.sports_meet_system.pojo.BasketballGame">
+    <select id="queryContingent" resultType="com.blueing.sports_meet_system.pojo.BasketballRecords">
         select te_id,name from team_score where sp_id=#{spId}
     </select>
-    <select id="queryScoreRecords" resultType="com.blueing.sports_meet_system.pojo.BasketballGame">
-        select scoring_time,score from score_records where te_id=#{teId}
+    <select id="queryScoreRecords" resultType="com.blueing.sports_meet_system.pojo.BasketballRecords">
+        select te_id,scoring_time,score from score_records where te_id=#{teId}
     </select>
-    <select id="queryTeamScores" resultType="com.blueing.sports_meet_system.pojo.BasketballGame">
+    <select id="queryTeamScores" resultType="com.blueing.sports_meet_system.pojo.BasketballRecords">
         select te_id,name,score from team_score where sp_id=#{spId}
     </select>
-    <select id="queryBasketballEvent" resultType="com.blueing.sports_meet_system.pojo.BasketballGame">
+    <select id="queryBasketballEvent" resultType="com.blueing.sports_meet_system.pojo.BasketballRecords">
         select * from basketballs
     </select>
-    <select id="queryAiContingent" resultType="com.blueing.sports_meet_system.pojo.BasketballGame">
+    <select id="queryAiContingent" resultType="com.blueing.sports_meet_system.pojo.BasketballRecords">
         select te_id,rgb from team_score where sp_id=#{spId}
     </select>
-    <select id="querySchedule" resultType="com.blueing.sports_meet_system.pojo.BasketballGame">
+    <select id="querySchedule" resultType="com.blueing.sports_meet_system.pojo.BasketballRecords">
         select type,start_time,end_time from bas_duration where sp_id=#{spId}
+    </select>
+    <select id="queryScoreRecordsBySpId" resultType="com.blueing.sports_meet_system.pojo.BasketballRecords">
+        select * from score_records where te_id=#{teId}
     </select>
 </mapper>

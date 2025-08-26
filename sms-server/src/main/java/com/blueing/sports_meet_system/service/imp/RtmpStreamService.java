@@ -30,16 +30,15 @@ public class RtmpStreamService {
         executorService.submit(new StreamWorker(pullUrl));
     }
 
-
     private static class StreamWorker implements Runnable {
 
-        private WebSocketServer webSocketServer;
-        private FFmpegFrameGrabber grabber;
+        private final WebSocketServer webSocketServer;
+        private final FFmpegFrameGrabber grabber;
 
         StreamWorker(String pullUrl) {
             webSocketServer = new WebSocketServer();
             grabber = new FFmpegFrameGrabber(pullUrl);
-            log.info("正在连接RTMP服务器: " + pullUrl);
+            log.info("正在连接RTMP服务器: {}", pullUrl);
         }
 
         @Override
@@ -47,11 +46,13 @@ public class RtmpStreamService {
             try {
                 log.info("开始启动grabber...");
                 grabber.start();
-                log.info("连接成功！");
-                log.info("视频格式: " + grabber.getFormat());
-                log.info("视频宽度: " + grabber.getImageWidth());
-                log.info("视频高度: " + grabber.getImageHeight());
-                log.info("帧率: " + grabber.getVideoFrameRate());
+                if (log.isInfoEnabled()) {
+                    log.info("连接成功！");
+                    log.info("视频格式: {}", grabber.getFormat());
+                    log.info("视频宽度: {}", grabber.getImageWidth());
+                    log.info("视频高度: {}", grabber.getImageHeight());
+                    log.info("帧率: {}", grabber.getVideoFrameRate());
+                }
                 Frame frame;
                 long frameCount = 0;
                 long startTime = System.currentTimeMillis();
@@ -61,14 +62,14 @@ public class RtmpStreamService {
                                 long currentTime = System.currentTimeMillis();
                                 double elapsedSeconds = (currentTime - startTime) / 1000.0;
                                 double fps = frameCount / elapsedSeconds;
-                                log.info("已播放: %.1f秒, 帧数: %d, 实时帧率: %.2f fps%n", elapsedSeconds, frameCount, fps);
+                                log.info("已播放: {}秒, 帧数: {}, 实时帧率: {}", elapsedSeconds, frameCount, fps);
                                 String json = "OKOKOK";
                                 webSocketServer.sendToAllClient(json);
                             }
                 }
 
             } catch (FFmpegFrameGrabber.Exception e) {
-                log.info("播放过程中发生错误: " + e.getMessage());
+                log.info("播放过程中发生错误: {}", e.getMessage());
                 throw new RuntimeException(e);
             } finally {
                 // 6. 清理资源
@@ -79,9 +80,10 @@ public class RtmpStreamService {
                     }
                     log.info("播放器已关闭，资源已释放");
                 } catch (Exception e) {
-                    log.info("释放资源时发生错误: " + e.getMessage());
+                    log.info("释放资源时发生错误: {}", e.getMessage());
                 }
             }
         }
     }
+
 }

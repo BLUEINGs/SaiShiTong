@@ -7,9 +7,9 @@ import java.util.List;
 
 @Mapper
 public interface BasketballGameMapper {
-    BasketballGame querySpidScores(Integer teId);
+    BasketballRecords querySpidScores(Integer teId);
 
-    List<BasketballGame> queryTeamScores(Integer spId);
+    List<BasketballRecords> queryTeamScores(Integer spId);
 
     void modifyTeamScores(Integer teId,Integer score);
 
@@ -21,14 +21,16 @@ public interface BasketballGameMapper {
 
     void addContingent(Integer spId,String name,String rgb);
 
-    List<BasketballGame> queryContingent(Integer spId);
+    List<BasketballRecords> queryContingent(Integer spId);
 
-    List<BasketballGame> queryScoreRecords(Integer teId);
+    List<BasketballRecords> queryScoreRecords(Integer teId);
 
-    List<BasketballGame> queryBasketballEvent();
+    List<BasketballRecords> queryScoreRecordsBySpId(Integer spId);
 
-    List<BasketballGame> queryAiContingent(Integer spId);
+    List<BasketballRecords> queryBasketballEvent();
 
-    List<BasketballGame> querySchedule(Integer spId);
+    List<BasketballRecords> queryAiContingent(Integer spId);
+
+    List<BasketballRecords> querySchedule(Integer spId);
 
 }

@@ -1,26 +1,25 @@
+/*
 package com.blueing.sports_meet_system.service.imp;
 
 import ai.onnxruntime.*;
 import com.blueing.sports_meet_system.entity.DetectContext;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.OpenCVFrameConverter;
 import org.bytedeco.opencv.global.opencv_core;
 import org.bytedeco.opencv.global.opencv_imgcodecs;
 import org.bytedeco.opencv.global.opencv_imgproc;
 import org.bytedeco.opencv.opencv_core.*;
 import org.springframework.stereotype.Service;
-import org.bytedeco.javacv.Frame;
 
 import java.nio.FloatBuffer;
-import java.util.*;
 import java.util.Arrays;
-
-import static org.bytedeco.javacv.Java2DFrameUtils.toMat;
+import java.util.*;
 
 @Slf4j
 @Service
-public class DetectorServiceA {
+public class DetectorServiceA_back {
 
     private OrtEnvironment env; // ONNX环境
     private OrtSession session; // 一个会话有多个线程
@@ -29,35 +28,25 @@ public class DetectorServiceA {
     private String inputName;
     private String outputName;
 
-    public DetectorServiceA() {
+    public DetectorServiceA_back() {
     }
 
-    @PostConstruct // 上面没地方处理，如果初始化失败，检测服务就是启动不了
+    @PostConstruct  // 上面没地方处理，如果初始化失败，检测服务就是启动不了
     public void initOnnxSession() throws OrtException {
         // 创建会话环境
         env = OrtEnvironment.getEnvironment();
 
         // 创建会话设置
         sessionOptions = new OrtSession.SessionOptions();
-
-        // 尝试使用GPU，如果失败则回退到CPU
-        try {
-            // 启用CUDA
-            sessionOptions.addCUDA(0); // 使用第一个GPU设备
-            log.info("成功启用GPU加速");
-        } catch (OrtException e) {
-            log.warn("GPU初始化失败，将使用CPU模式: {}", e.getMessage());
-            // CPU相关设置
-            sessionOptions.setInterOpNumThreads(4); // 算子内并行
-            sessionOptions.setIntraOpNumThreads(2); // 算子间并行
-        }
-
+        sessionOptions.setInterOpNumThreads(4); // 算子内并行
+        sessionOptions.setInterOpNumThreads(2); // 算子间并行
         sessionOptions.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.ALL_OPT);
 
-        /*
-         * 创建会话
+        */
+/*创建会话
          * 会话环境：通过模型和会话设置创建会话的工具
-         */
+         *  *//*
+
         String modelPath = "F:\\AiProject\\ultralytics-main\\model_test\\detect_service\\best.onnx";
         session = env.createSession(modelPath, sessionOptions);
         NodeInfo inputInfo = session.getInputInfo().values().iterator().next();
@@ -69,25 +58,18 @@ public class DetectorServiceA {
     }
 
     public List<List<float[]>> detect(List<Frame> frames) throws OrtException {
-        float[] inputTensors = new float[frames.size() * 3 * 640 * 640];
-        DetectContext context = DetectContext.builder()
-                .inputShape(new int[] { 640, 640 })
-                .originMats(new ArrayList<>())
-                .build();
-
+        float[] inputTensors=new float[frames.size()*3*640*640];
+        DetectContext context = DetectContext.builder().inputShape(new int[]{640, 640}).build();
         for (int i = 0; i < frames.size(); i++) {
-            Frame frame = frames.get(i);
+            Frame frame= frames.get(i);
             preprocess(frame, context);
             float[] inputTensor = context.getInputTensor();
-            System.arraycopy(inputTensor, 0, inputTensors,
-                    i * 3 * context.getInputShape()[0] * context.getInputShape()[1],
-                    3 * context.getInputShape()[0] * context.getInputShape()[1]);
+            System.arraycopy(inputTensor,0,inputTensors,i*3*context.getInputShape()[0]*context.getInputShape()[1], 3*context.getInputShape()[0]*context.getInputShape()[1]);
         }
 
-        OnnxTensor inputOnnxTensors = OnnxTensor.createTensor(env, FloatBuffer.wrap(inputTensors),
-                new long[] { frames.size(), 3, 640, 640 });
+        OnnxTensor inputOnnxTensors = OnnxTensor.createTensor(env, FloatBuffer.wrap(inputTensors), new long[]{frames.size(), 3, 640, 640});
         Map<String, OnnxTensor> inputs = Map.of(inputName, inputOnnxTensors);
-        // 开始执行推理
+        //开始执行推理
         OrtSession.Result result = session.run(inputs);
         OnnxTensor outputTensor = (OnnxTensor) result.get(outputName).get();
         context.setOutputOnnxTensor(outputTensor);
@@ -95,21 +77,19 @@ public class DetectorServiceA {
         return postprocess(context);
     }
 
-    /*
-     * public List<float[]> detect(Frame frame) throws OrtException {
-     * DetectContext context = preprocess(frame,
-     * DetectContext.builder().inputShape(new int[]{640, 640}).build());
-     * float[] inputTensor = context.getInputTensor();
-     * OnnxTensor inputOnnxTensor = OnnxTensor.createTensor(env,
-     * FloatBuffer.wrap(inputTensor), new long[]{1, 3, 640, 640});
-     * Map<String, OnnxTensor> inputs = Map.of(inputName, inputOnnxTensor);
-     * OrtSession.Result result = session.run(inputs);
-     * OnnxTensor outputTensor = (OnnxTensor) result.get(outputName).get();
-     * context.setOutputOnnxTensor(outputTensor);
-     * log.info("推理结果：{}", outputTensor);
-     * return postprocess(context);
-     * }
-     */
+    */
+/* public List<float[]> detect(Frame frame) throws OrtException {
+        DetectContext context = preprocess(frame, DetectContext.builder().inputShape(new int[]{640, 640}).build());
+        float[] inputTensor = context.getInputTensor();
+        OnnxTensor inputOnnxTensor = OnnxTensor.createTensor(env, FloatBuffer.wrap(inputTensor), new long[]{1, 3, 640, 640});
+        Map<String, OnnxTensor> inputs = Map.of(inputName, inputOnnxTensor);
+        OrtSession.Result result = session.run(inputs);
+        OnnxTensor outputTensor = (OnnxTensor) result.get(outputName).get();
+        context.setOutputOnnxTensor(outputTensor);
+        log.info("推理结果：{}", outputTensor);
+        return postprocess(context);
+    } *//*
+
 
     private static List<List<float[]>> postprocess(DetectContext context) {
         OnnxTensor outputTensor = context.getOutputOnnxTensor();
@@ -131,9 +111,9 @@ public class DetectorServiceA {
         int dim1 = shape[1]; // 9
         int dim2 = shape[2]; // 34000
 
-        // 创建张量结构
+        //创建张量结构
         List<List<float[]>> filteredImages = new ArrayList<>();
-        ArrayList<ArrayList<float[]>> images = new ArrayList<>();
+        ArrayList<ArrayList<float[]>> images=new ArrayList<>();
         for (int n = 0; n < dim0; n++) {
             ArrayList<float[]> boxList = new ArrayList<>();
             images.add(boxList);
@@ -143,10 +123,10 @@ public class DetectorServiceA {
             }
         }
 
-        // 构造张量
+        //构造张量
         for (int n = 0; n < dim0; n++) {
-            List<float[]> boxList = images.get(n);
-            float[] flatArray = Arrays.copyOfRange(allFlatArray, n * dim1 * dim2, (n + 1) * dim1 * dim2);
+            List<float[]> boxList=images.get(n);
+            float[] flatArray = Arrays.copyOfRange(allFlatArray, n * dim1*dim2, (n + 1) * dim1*dim2);
             for (int i = 0; i < dim1; i++) {
                 for (int j = 0; j < dim2; j++) {
                     float[] box = boxList.get(j);
@@ -155,7 +135,7 @@ public class DetectorServiceA {
             }
         }
 
-        // 下面是置信度过滤逻辑
+        //下面是置信度过滤逻辑
         float confThreshold = 0.25f; // 置信度阈值（根据模型调整，建议0.2~0.5）
         // List<float[]> filteredBoxes = new ArrayList<>();
         Iterator<List<float[]>> iterator = filteredImages.iterator();
@@ -179,23 +159,20 @@ public class DetectorServiceA {
         // log.info("置信度过滤后剩余有效框数量：{}（原始框数量：{}）", filteredBoxes.size(), boxList.size());
         // log.info("获取结果,{}", Arrays.toString(boxList.get(2)));
         List<List<float[]>> result = new ArrayList<>();
-        // int count = 0;
+        int count=0;
         for (List<float[]> filteredBoxes : filteredImages) {
-            List<float[]> nmsResults = nms(filteredBoxes, context, 0.5f);
+            List<float[]> nmsResults = nms(filteredBoxes,context, 0.5f);
             result.add(nmsResults);
             // log.info("srcMat是null吗？,{}", context.getOriginMat()==null);
-            /*
-             * for (float[] box : nmsResults) {
-             * opencv_imgproc.rectangle(
-             * context.getOriginMats().get(count),
-             * new Rect((int) box[0], (int) box[1], (int) (box[2] - box[0]), (int) (box[3] -
-             * box[1])),
-             * Scalar.BLUE);
-             * }
-             * opencv_imgcodecs.imwrite("result" + count + ".png",
-             * context.getOriginMats().get(count));
-             * count++;
-             */
+            for (float[] box : nmsResults) {
+                opencv_imgproc.rectangle(
+                        context.getOriginMat(),
+                        new Rect((int) box[0], (int) box[1], (int) (box[2]-box[0]), (int) (box[3]-box[1])),
+                        Scalar.BLUE
+                );
+            }
+            opencv_imgcodecs.imwrite("result"+count+".png",context.getOriginMat());
+            count++;
         }
 
         return result;// 返回：nms后的结果
@@ -208,12 +185,11 @@ public class DetectorServiceA {
         float[] inputTensor = new float[3 * inputWidth * inputHeight];
         try (OpenCVFrameConverter.ToMat toMat = new OpenCVFrameConverter.ToMat()) {
             Mat srcMat = toMat.convertToMat(frame);
-            // opencv_imgcodecs.imwrite("origin"+new
-            // Random().nextInt(1000000)+".png",srcMat);
+            context.setOriginMat(srcMat);
             // log.info("srcMat是null吗？,{}",srcMat==null);
-            // opencv_imgcodecs.imwrite("test.jpg", srcMat);
+            opencv_imgcodecs.imwrite("test.jpg", srcMat);
             Mat letterboxed = letterbox(srcMat, context);
-            // context.getOriginMats().add(srcMat.clone());
+            context.setOriginMat(srcMat.clone());
             srcMat.release();
             Mat rgbMat = new Mat();
             opencv_imgproc.cvtColor(letterboxed, rgbMat, opencv_imgproc.COLOR_BGR2RGB);
@@ -221,7 +197,7 @@ public class DetectorServiceA {
             letterboxed.release();
             // 归一化：yolo对RGB三个通道每个通道要的都是[0,1]的值
             Mat normalizedMat = new Mat();
-            rgbMat.convertTo(normalizedMat, opencv_core.CV_32F, 1.0 / 255, 0);
+            rgbMat.convertTo(normalizedMat, opencv_core.CV_32F,1.0/255,0);
 
             // 维度调整：HWC -> CHW（正确版本）
             MatVector chwMats = new MatVector(3); // 用 MatVector 替代 Mat[]
@@ -242,20 +218,22 @@ public class DetectorServiceA {
         return context;
     }
 
-    /**
+    */
+/**
      * 该方法通过缩放+填充处理原图像到指定大小，不破坏原图比例
      *
      * @param src：原图像
      * @param detectContext：目标检测上下文
      * @return 处理后的图像
-     */
+     *//*
+
     private static Mat letterbox(Mat src, DetectContext detectContext) {
         int targetWidth = detectContext.getInputShape()[0];
         int targetHeight = detectContext.getInputShape()[1];
         // 计算缩放比例（取宽高缩放比例的最小值，避免图像拉伸）
         int imgWidth = src.cols();
         int imgHeight = src.rows();
-        detectContext.setImgShape(new int[] { imgWidth, imgHeight });
+        detectContext.setImgShape(new int[]{imgWidth,imgHeight});
         double scale = Math.min((double) targetWidth / imgWidth, (double) targetHeight / imgHeight);
         int newWidth = (int) (imgWidth * scale);
         int newHeight = (int) (imgHeight * scale);
@@ -273,10 +251,12 @@ public class DetectorServiceA {
         // Rect是矩形区域对象
         Rect rect = new Rect(xOffset, yOffset, newWidth, newHeight);
         Mat roi = letterbox.apply(rect); // ROI区域（感兴趣区域）
-        detectContext.setOffset(new int[] { xOffset, yOffset });
-        /*
+        detectContext.setOffset(new int[]{xOffset,yOffset});
+        */
+/*
          * Mat.apply()方法：给进一个区域（Rect/Range），然后该方法返回一个该区域框出的像素块，这些像素块与被提取Mat中对应区域是相同引用
-         */
+         *  *//*
+
 
         resized.copyTo(roi); // 复制缩放图像到 ROI
         // 释放临时Mat
@@ -285,26 +265,28 @@ public class DetectorServiceA {
         return letterbox;
     }
 
-    /**
+    */
+/**
      * 预处理box格式：转换坐标(cx,cy,w,h→x1,y1,x2,y2) + 提取最高置信度类别及分数
      *
      * @param originalBoxes 原始box列表（每个元素为 [cx, cy, w, h, cls1_conf, ..., cls5_conf]）
      * @return 预处理后的box列表（每个元素为 [x1, y1, x2, y2, max_conf, class_id]）
-     */
+     *//*
+
     private static List<float[]> preprocessBoxesForNMS(List<float[]> originalBoxes, DetectContext context) {
         List<float[]> processedBoxes = new ArrayList<>();
 
         // 获取原始图像和模型输入尺寸
-        int imgWidth = context.getImgShape()[0]; // 原始图像宽度
+        int imgWidth = context.getImgShape()[0];  // 原始图像宽度
         int imgHeight = context.getImgShape()[1]; // 原始图像高度
-        int modelWidth = context.getInputShape()[0]; // 模型输入宽度
+        int modelWidth = context.getInputShape()[0];  // 模型输入宽度
         int modelHeight = context.getInputShape()[1]; // 模型输入高度
-        int[] offset = context.getOffset(); // 填充偏移量 [x_offset, y_offset]
+        int[] offset = context.getOffset();  // 填充偏移量 [x_offset, y_offset]
 
         // 计算缩放比例 (考虑letterbox填充的情况)
-        float scale = Math.min((float) modelWidth / imgWidth, (float) modelHeight / imgHeight);
-        int scaledWidth = (int) (imgWidth * scale);
-        int scaledHeight = (int) (imgHeight * scale);
+        float scale = Math.min((float)modelWidth / imgWidth, (float)modelHeight / imgHeight);
+        int scaledWidth = (int)(imgWidth * scale);
+        int scaledHeight = (int)(imgHeight * scale);
 
         // 计算填充区域 (letterbox)
         int padX = (modelWidth - scaledWidth) / 2;
@@ -346,14 +328,14 @@ public class DetectorServiceA {
             }
 
             // 4. 构造预处理后的box：[x1, y1, x2, y2, max_conf, class_id]
-            processedBoxes.add(new float[] { x1, y1, x2, y2, maxConf, classId });
+            processedBoxes.add(new float[]{x1, y1, x2, y2, maxConf, classId});
         }
         return processedBoxes;
     }
 
-    public static List<float[]> nms(List<float[]> boxes, DetectContext context, float iouThreshold) {
+    public static List<float[]> nms(List<float[]> boxes, DetectContext context,float iouThreshold) {
         // 【新增】先对原始box进行预处理（坐标转换+提取类别）
-        List<float[]> processedBoxes = preprocessBoxesForNMS(boxes, context);
+        List<float[]> processedBoxes = preprocessBoxesForNMS(boxes,context);
 
         // 1. 按类别分组（不同类别单独进行NMS，避免跨类别抑制）
         List<List<float[]>> classBoxes = groupByClass(processedBoxes);
@@ -367,14 +349,15 @@ public class DetectorServiceA {
         return result;
     }
 
-    /**
+    */
+/**
      * 按类别ID分组
-     */
+     *//*
+
     private static List<List<float[]>> groupByClass(List<float[]> boxes) {
         // 用类别ID作为键（boxes[5] 是 classId），值为该类别所有框
         List<List<float[]>> classBoxes = new ArrayList<>();
-        if (boxes.isEmpty())
-            return classBoxes;
+        if (boxes.isEmpty()) return classBoxes;
 
         // 先按 classId 排序，方便分组
         Collections.sort(boxes, Comparator.comparingInt(box -> (int) box[5]));
@@ -396,13 +379,14 @@ public class DetectorServiceA {
         return classBoxes;
     }
 
-    /**
+    */
+/**
      * 对单个类别的框执行NMS
-     */
+     *//*
+
     private static List<float[]> nmsForSingleClass(List<float[]> boxes, float iouThreshold) {
         List<float[]> keep = new ArrayList<>();
-        if (boxes.isEmpty())
-            return keep;
+        if (boxes.isEmpty()) return keep;
 
         // 1. 按置信度降序排序（优先保留高分框）
         Collections.sort(boxes, (a, b) -> Float.compare(b[4], a[4])); // 按 score（box[4]）倒序
@@ -428,13 +412,15 @@ public class DetectorServiceA {
         return keep;
     }
 
-    /**
+    */
+/**
      * 计算两个框的 IoU（交并比）
      *
      * @param box1 框1：[x1, y1, x2, y2, score, classId]
      * @param box2 框2：[x1, y1, x2, y2, score, classId]
      * @return IoU 值（0~1）
-     */
+     *//*
+
     private static float calculateIoU(float[] box1, float[] box2) {
         // 框1坐标
         float x1 = box1[0], y1 = box1[1], x2 = box1[2], y2 = box1[3];
@@ -464,3 +450,4 @@ public class DetectorServiceA {
     }
 
 }
+*/

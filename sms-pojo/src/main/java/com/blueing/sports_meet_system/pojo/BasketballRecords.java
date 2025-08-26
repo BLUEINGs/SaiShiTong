@@ -10,7 +10,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class BasketballGame {
+public class BasketballRecords {
     private Integer spId;
     private Integer teId;
     private String name;
@@ -21,12 +21,12 @@ public class BasketballGame {
     private Integer score;
     private Integer type;
     private Integer state;
-    List<BasketballGame>  basketballGames;
+    List<BasketballRecords> basketballRecords;
 
     @Override
     public String toString() {
         return "{" +
-                "basketballGames=" + basketballGames +
+                "basketballGames=" + basketballRecords +
                 ", spId=" + spId +
                 ", teId=" + teId +
                 ", name='" + name + '\'' +

@@ -1,7 +1,7 @@
 package com.blueing.sports_meet_system.service.imp;
 
 import com.blueing.sports_meet_system.mapper.BasketballGameMapper;
-import com.blueing.sports_meet_system.pojo.BasketballGame;
+import com.blueing.sports_meet_system.pojo.BasketballRecords;
 import com.blueing.sports_meet_system.service.BasketballGameService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,14 +20,14 @@ public class BasketballGameServiceA implements BasketballGameService {
 
     @Override
     public void addfraction(Integer teId, Integer fraction) {
-        BasketballGame basketballGame = basketballGameMapper.querySpidScores(teId);
-        Integer score = basketballGame.getScore();
+        BasketballRecords basketballRecords = basketballGameMapper.querySpidScores(teId);
+        Integer score = basketballRecords.getScore();
         score = score + fraction;
-        basketballGame.setScore(score);
+        basketballRecords.setScore(score);
         basketballGameMapper.modifyTeamScores(teId, score);
         ZonedDateTime zonedNow = ZonedDateTime.now();
         basketballGameMapper.addScoringSituation(teId, zonedNow, fraction);
-        socketServer.sendToAllClient(basketballGame.getSpId(),teId);
+        socketServer.sendToAllClient(basketballRecords.getSpId(),teId);
     }
 
     @Override
@@ -47,36 +47,36 @@ public class BasketballGameServiceA implements BasketballGameService {
     }
 
     @Override
-    public List<BasketballGame> queryTeamScoringDetailsRecord(Integer spId) {
-        List<BasketballGame> contingents = basketballGameMapper.queryContingent(spId);
-        for (BasketballGame contingent : contingents) {
+    public List<BasketballRecords> queryTeamScoringDetailsRecord(Integer spId) {
+        List<BasketballRecords> contingents = basketballGameMapper.queryContingent(spId);
+        for (BasketballRecords contingent : contingents) {
             Integer teId = contingent.getTeId();
-            contingent.setBasketballGames(basketballGameMapper.queryScoreRecords(teId));
+            contingent.setBasketballRecords(basketballGameMapper.queryScoreRecords(teId));
         }
         return contingents;
     }
 
     @Override
-    public List<BasketballGame> queryTeamScores(Integer spId) {
+    public List<BasketballRecords> queryTeamScores(Integer spId) {
         return basketballGameMapper.queryTeamScores(spId);
     }
 
     @Override
-    public List<BasketballGame> queryBasketballEvent() {
+    public List<BasketballRecords> queryBasketballEvent() {
         return basketballGameMapper.queryBasketballEvent();
     }
 
     @Override
-    public List<BasketballGame> queryAiContingent(Integer spId) {
+    public List<BasketballRecords> queryAiContingent(Integer spId) {
         return basketballGameMapper.queryAiContingent(spId);
     }
 
     @Override
-    public BasketballGame querySchedule(Integer spId) {
-        List<BasketballGame> schedules = basketballGameMapper.querySchedule(spId);
-        BasketballGame basketballGame = new BasketballGame();
-        basketballGame.setSpId(spId);
-        basketballGame.setBasketballGames(schedules);
-        return basketballGame;
+    public BasketballRecords querySchedule(Integer spId) {
+        List<BasketballRecords> schedules = basketballGameMapper.querySchedule(spId);
+        BasketballRecords basketballRecords = new BasketballRecords();
+        basketballRecords.setSpId(spId);
+        basketballRecords.setBasketballRecords(schedules);
+        return basketballRecords;
     }
 }

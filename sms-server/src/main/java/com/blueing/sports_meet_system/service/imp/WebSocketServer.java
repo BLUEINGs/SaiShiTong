@@ -1,7 +1,8 @@
 package com.blueing.sports_meet_system.service.imp;
 
 import com.blueing.sports_meet_system.mapper.BasketballGameMapper;
-import com.blueing.sports_meet_system.pojo.BasketballGame;
+import com.blueing.sports_meet_system.pojo.BasketballRecords;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -17,12 +18,13 @@ import java.util.*;
 /**
  * WebSocket服务
  */
+@Slf4j
 @Component
-@ServerEndpoint("/ws/{spid}")
+@ServerEndpoint("/ws/{spId}")
 public class WebSocketServer {
 
     //存放会话对象
-    private static Map<String, Session> sessionMap = new HashMap();
+    private static Map<Integer,List<Session>> sessions = new HashMap();
 
     @Autowired
     private BasketballGameMapper basketballGameMapper;
@@ -31,9 +33,10 @@ public class WebSocketServer {
      * 连接建立成功调用的方法
      */
     @OnOpen
-    public void onOpen(Session session, @PathParam("spid") String spid) {
-        System.out.println("客户端：" + spid + "建立连接");
-        sessionMap.put(spid, session);
+    public void onOpen(Session session, @PathParam("spId") String spId) {
+        log.info("用户建立spId为：{}的ws链接",spId);
+        List<Session> sessionList = sessions.getOrDefault(Integer.parseInt(spId), new ArrayList<>());
+        sessionList.add(session);
     }
 
     /**
@@ -42,19 +45,19 @@ public class WebSocketServer {
      * @param message 客户端发送过来的消息
      */
     @OnMessage
-    public void onMessage(String message, @PathParam("spid") String spid) {
-        System.out.println("收到来自客户端：" + spid + "的信息:" + message);
+    public void onMessage(String message, @PathParam("spId") String spId) {
+        log.info("用户发送消息:{}。无需理会",message);
     }
 
     /**
      * 连接关闭调用的方法
      *
-     * @param spid
+     * @param spId
      */
     @OnClose
-    public void onClose(@PathParam("spid") String spid) {
-        System.out.println("连接断开:" + spid);
-        sessionMap.remove(spid);
+    public void onClose(Session session,@PathParam("spId") String spId) {
+        log.info("用户断开该spId的链接：{}",spId);
+        sessions.get(Integer.parseInt(spId)).remove(session);
     }
 
     /**
@@ -62,16 +65,23 @@ public class WebSocketServer {
      *
      * @param
      */
-    public void sendToAllClient(Integer spid, Integer teId) {
+    public void sendToAllClient(Integer spId, Integer teId) {
         try {
-            sessionMap.get(spid.toString()).getBasicRemote().sendText(basketballGameMapper.queryScoreRecords(teId).toString());
+            List<Session> sessionList = sessions.get(spId);
+            for (Session session : sessionList) {
+                List<BasketballRecords> records = basketballGameMapper.queryScoreRecords(teId);
+                for (BasketballRecords record : records) {
+                    record.getSpId()
+                }
+                session.getBasicRemote().sendText(records.toString());
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     public void sendToAllClient(String json) {
-        Collection<Session> sessions = sessionMap.values();
+        Collection<Session> sessions = WebSocketServer.sessions.values();
 
         for (Session session : sessions) {
             try {

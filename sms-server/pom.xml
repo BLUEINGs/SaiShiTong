@@ -83,6 +83,8 @@
             <version>4.1.94.Final</version> <!-- 2025年最新稳定版 -->
         </dependency>
 
+
+
         <dependency>
             <groupId>com.blueing</groupId>
             <artifactId>sms-utils</artifactId>
@@ -110,6 +112,12 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-beans</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.blueing</groupId>
+            <artifactId>sms-pojo</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 

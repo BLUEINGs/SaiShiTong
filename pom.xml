@@ -44,26 +44,19 @@
             <version>1.18.36</version>
         </dependency>
 
-        <!-- ONNX Runtime (CPU) -->
-        <dependency>
-            <groupId>com.microsoft.onnxruntime</groupId>
-            <artifactId>onnxruntime</artifactId>
-            <version>1.16.3</version>
-        </dependency>
-
         <!-- ONNX Runtime (GPU) -->
         <dependency>
             <groupId>com.microsoft.onnxruntime</groupId>
             <artifactId>onnxruntime_gpu</artifactId>
-            <version>1.16.3</version>
+            <version>1.20.0</version>
         </dependency>
 
-        <!-- OpenCV 官方预编译版本（Windows/Linux/macOS） -->
-        <dependency>
-            <groupId>org.openpnp</groupId>
-            <artifactId>opencv</artifactId>
-            <version>4.9.0-0</version>
-        </dependency>
+        <!-- ONNX Runtime (CPU) -->
+        <!--<dependency>
+            <groupId>com.microsoft.onnxruntime</groupId>
+            <artifactId>onnxruntime</artifactId>
+            <version>1.20.0</version>
+        </dependency>-->
 
     </dependencies>
 
