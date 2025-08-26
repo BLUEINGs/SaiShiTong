@@ -11,6 +11,7 @@ import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -62,17 +63,10 @@ public class WebSocketServer {
      * @param
      */
     public void sendToAllClient(Integer spid, Integer teId) {
-        Set<String> strings = sessionMap.keySet();
-        for (String string : strings) {
-            try {
-                //服务器向客户端发送消息
-                if (Integer.parseInt(string) == spid) {
-                    sessionMap.get(string).getBasicRemote().sendText(basketballGameMapper.queryScoreRecords(teId).toString());
-                    break;
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        try {
+            sessionMap.get(spid.toString()).getBasicRemote().sendText(basketballGameMapper.queryScoreRecords(teId).toString());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
