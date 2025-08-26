@@ -66,7 +66,7 @@ public class WebSocketServer {
            try {
                //服务器向客户端发送消息
                if(Integer.parseInt(string) == spid)
-               sessionMap.get(spid).getBasicRemote().sendText(basketballGameMapper.queryScoreRecords(teId).toString());
+               sessionMap.get(string).getBasicRemote().sendText(basketballGameMapper.queryScoreRecords(teId).toString());
            } catch (Exception e) {
                e.printStackTrace();
            }
