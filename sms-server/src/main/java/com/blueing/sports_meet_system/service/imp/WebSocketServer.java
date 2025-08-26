@@ -4,6 +4,7 @@ import com.blueing.sports_meet_system.mapper.BasketballGameMapper;
 import com.blueing.sports_meet_system.pojo.BasketballGame;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
 import javax.websocket.OnClose;
 import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
@@ -60,17 +61,19 @@ public class WebSocketServer {
      *
      * @param
      */
-    public void sendToAllClient(Integer spid,Integer teId) {
+    public void sendToAllClient(Integer spid, Integer teId) {
         Set<String> strings = sessionMap.keySet();
-       for (String string : strings) {
-           try {
-               //服务器向客户端发送消息
-               if(Integer.parseInt(string) == spid)
-               sessionMap.get(string).getBasicRemote().sendText(basketballGameMapper.queryScoreRecords(teId).toString());
-           } catch (Exception e) {
-               e.printStackTrace();
-           }
-       }
+        for (String string : strings) {
+            try {
+                //服务器向客户端发送消息
+                if (Integer.parseInt(string) == spid) {
+                    sessionMap.get(string).getBasicRemote().sendText(basketballGameMapper.queryScoreRecords(teId).toString());
+                    break;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public void sendToAllClient(String json) {
