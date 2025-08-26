@@ -14,16 +14,20 @@ public class BasketballGameServiceA implements BasketballGameService {
     @Autowired
     private BasketballGameMapper basketballGameMapper;
 
+    @Autowired
+    private WebSocketServer socketServer;
+
 
     @Override
     public void addfraction(Integer teId, Integer fraction) {
-        BasketballGame basketballGame = basketballGameMapper.queryScores(teId);
+        BasketballGame basketballGame = basketballGameMapper.querySpidScores(teId);
         Integer score = basketballGame.getScore();
         score = score + fraction;
         basketballGame.setScore(score);
         basketballGameMapper.modifyTeamScores(teId, score);
         ZonedDateTime zonedNow = ZonedDateTime.now();
         basketballGameMapper.addScoringSituation(teId, zonedNow, fraction);
+        socketServer.sendToAllClient(basketballGame.getSpId(),teId);
     }
 
     @Override

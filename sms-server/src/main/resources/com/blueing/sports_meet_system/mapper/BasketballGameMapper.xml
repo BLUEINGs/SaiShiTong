@@ -20,8 +20,8 @@
         update team_score set score=#{score} where te_id=#{teId}
     </update>
 
-    <select id="queryScores" resultType="com.blueing.sports_meet_system.pojo.BasketballGame">
-        select score from team_score where te_id=#{teId}
+    <select id="querySpidScores" resultType="com.blueing.sports_meet_system.pojo.BasketballGame">
+        select sp_id,score from team_score where te_id=#{teId}
     </select>
     <select id="queryContingent" resultType="com.blueing.sports_meet_system.pojo.BasketballGame">
         select te_id,name from team_score where sp_id=#{spId}
@@ -40,8 +40,5 @@
     </select>
     <select id="querySchedule" resultType="com.blueing.sports_meet_system.pojo.BasketballGame">
         select type,start_time,end_time from bas_duration where sp_id=#{spId}
-    </select>
-    <select id="queryAllTeamsScore" resultType="com.blueing.sports_meet_system.pojo.BasketballGame">
-        select * from team_score;
     </select>
 </mapper>

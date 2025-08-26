@@ -7,7 +7,7 @@ import java.util.List;
 
 @Mapper
 public interface BasketballGameMapper {
-    BasketballGame queryScores(Integer teId);
+    BasketballGame querySpidScores(Integer teId);
 
     List<BasketballGame> queryTeamScores(Integer spId);
 
@@ -27,9 +27,8 @@ public interface BasketballGameMapper {
 
     List<BasketballGame> queryBasketballEvent();
 
-    List<BasketballGame> queryAllTeamsScore();
-
     List<BasketballGame> queryAiContingent(Integer spId);
 
     List<BasketballGame> querySchedule(Integer spId);
+
 }
