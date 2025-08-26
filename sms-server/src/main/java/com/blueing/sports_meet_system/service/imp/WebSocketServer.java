@@ -18,7 +18,7 @@ import java.util.*;
  * WebSocket服务
  */
 @Component
-@ServerEndpoint("/ws/{spid}")
+@ServerEndpoint("/ws/{spId}")
 public class WebSocketServer {
 
     //存放会话对象
@@ -31,9 +31,9 @@ public class WebSocketServer {
      * 连接建立成功调用的方法
      */
     @OnOpen
-    public void onOpen(Session session, @PathParam("spid") String spid) {
-        System.out.println("客户端：" + spid + "建立连接");
-        sessionMap.put(spid, session);
+    public void onOpen(Session session, @PathParam("spId") String spId) {
+        System.out.println("客户端：" + spId + "建立连接");
+        sessionMap.put(spId, session);
     }
 
     /**
@@ -42,19 +42,19 @@ public class WebSocketServer {
      * @param message 客户端发送过来的消息
      */
     @OnMessage
-    public void onMessage(String message, @PathParam("spid") String spid) {
-        System.out.println("收到来自客户端：" + spid + "的信息:" + message);
+    public void onMessage(String message, @PathParam("spId") String spId) {
+        System.out.println("收到来自客户端：" + spId + "的信息:" + message);
     }
 
     /**
      * 连接关闭调用的方法
      *
-     * @param spid
+     * @param spId
      */
     @OnClose
-    public void onClose(@PathParam("spid") String spid) {
-        System.out.println("连接断开:" + spid);
-        sessionMap.remove(spid);
+    public void onClose(@PathParam("spId") String spId) {
+        System.out.println("连接断开:" + spId);
+        sessionMap.remove(spId);
     }
 
     /**
@@ -62,9 +62,9 @@ public class WebSocketServer {
      *
      * @param
      */
-    public void sendToAllClient(Integer spid, Integer teId) {
+    public void sendToAllClient(Integer spId, Integer teId) {
         try {
-            sessionMap.get(spid.toString()).getBasicRemote().sendText(basketballGameMapper.queryScoreRecords(teId).toString());
+            sessionMap.get(spId.toString()).getBasicRemote().sendText(basketballGameMapper.queryScoreRecords(teId).toString());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
