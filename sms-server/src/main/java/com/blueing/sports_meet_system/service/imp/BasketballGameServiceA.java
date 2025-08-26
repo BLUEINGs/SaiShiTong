@@ -48,12 +48,7 @@ public class BasketballGameServiceA implements BasketballGameService {
 
     @Override
     public List<BasketballRecords> queryTeamScoringDetailsRecord(Integer spId) {
-        List<BasketballRecords> contingents = basketballGameMapper.queryContingent(spId);
-        for (BasketballRecords contingent : contingents) {
-            Integer teId = contingent.getTeId();
-            contingent.setBasketballRecords(basketballGameMapper.queryScoreRecords(teId));
-        }
-        return contingents;
+        return basketballGameMapper.queryScoreRecords(spId);
     }
 
     @Override

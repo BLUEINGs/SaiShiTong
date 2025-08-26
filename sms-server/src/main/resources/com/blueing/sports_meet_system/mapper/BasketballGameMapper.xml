@@ -19,15 +19,11 @@
     <update id="modifyTeamScores">
         update team_score set score=#{score} where te_id=#{teId}
     </update>
-
     <select id="querySpidScores" resultType="com.blueing.sports_meet_system.pojo.BasketballRecords">
         select sp_id,score from team_score where te_id=#{teId}
     </select>
-    <select id="queryContingent" resultType="com.blueing.sports_meet_system.pojo.BasketballRecords">
-        select te_id,name from team_score where sp_id=#{spId}
-    </select>
     <select id="queryScoreRecords" resultType="com.blueing.sports_meet_system.pojo.BasketballRecords">
-        select te_id,scoring_time,score from score_records where te_id=#{teId}
+        select t.te_id,t.name,s.scoring_time,s.score from team_score t left join score_records s on t.te_id=s.te_id where t.sp_id=#{spId}
     </select>
     <select id="queryTeamScores" resultType="com.blueing.sports_meet_system.pojo.BasketballRecords">
         select te_id,name,score from team_score where sp_id=#{spId}

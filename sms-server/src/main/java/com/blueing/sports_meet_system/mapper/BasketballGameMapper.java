@@ -21,9 +21,7 @@ public interface BasketballGameMapper {
 
     void addContingent(Integer spId,String name,String rgb);
 
-    List<BasketballRecords> queryContingent(Integer spId);
-
-    List<BasketballRecords> queryScoreRecords(Integer teId);
+    List<BasketballRecords> queryScoreRecords(Integer spId);
 
     List<BasketballRecords> queryScoreRecordsBySpId(Integer spId);
 

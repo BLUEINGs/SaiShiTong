@@ -69,7 +69,7 @@ public class WebSocketServer {
         try {
             List<Session> sessionList = sessions.get(spId);
             for (Session session : sessionList) {
-                List<BasketballRecords> records = basketballGameMapper.queryScoreRecords(teId);
+                List<BasketballRecords> records = basketballGameMapper.queryScoreRecords(spId);
                 for (BasketballRecords record : records) {
                     record.getSpId()
                 }
