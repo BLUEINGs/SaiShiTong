@@ -68,7 +68,7 @@ public class DetectorServiceA {
         log.info("ONNX模型加载成功！模型信息：{}", inputInfo);
     }
 
-    public List<List<float[]>> detect(List<Frame> frames) throws OrtException {
+    public List<List<float[]>> detect(List<Frame> frames) {
         float[] inputTensors = new float[frames.size() * 3 * 640 * 640];
         DetectContext context = DetectContext.builder()
                 .inputShape(new int[] { 640, 640 })
@@ -83,15 +83,19 @@ public class DetectorServiceA {
                     i * 3 * context.getInputShape()[0] * context.getInputShape()[1],
                     3 * context.getInputShape()[0] * context.getInputShape()[1]);
         }
-
-        OnnxTensor inputOnnxTensors = OnnxTensor.createTensor(env, FloatBuffer.wrap(inputTensors),
-                new long[] { frames.size(), 3, 640, 640 });
-        Map<String, OnnxTensor> inputs = Map.of(inputName, inputOnnxTensors);
-        // 开始执行推理
-        OrtSession.Result result = session.run(inputs);
-        OnnxTensor outputTensor = (OnnxTensor) result.get(outputName).get();
-        context.setOutputOnnxTensor(outputTensor);
-        // log.info("推理结果：{}", outputTensor);
+        try{
+            OnnxTensor inputOnnxTensors = OnnxTensor.createTensor(env, FloatBuffer.wrap(inputTensors),
+                    new long[] { frames.size(), 3, 640, 640 });
+            Map<String, OnnxTensor> inputs = Map.of(inputName, inputOnnxTensors);
+            // 开始执行推理
+            OrtSession.Result result = session.run(inputs);
+            OnnxTensor outputTensor = (OnnxTensor) result.get(outputName).get();
+            context.setOutputOnnxTensor(outputTensor);
+        }catch (OrtException e){
+            e.printStackTrace();
+            log.info("当前帧无法处理，跳过");
+            return null;
+        }
         return postprocess(context);
     }
 
@@ -202,16 +206,15 @@ public class DetectorServiceA {
     }
 
     private static DetectContext preprocess(Frame frame, DetectContext context) {
+        // log.info("frame是null吗？{}",frame==null);
+        // log.info("frame的情况：{}",frame.imageWidth);
         // Frame->Mat ，Mat类是OpenCV图像类
         int inputWidth = context.getInputShape()[0];
         int inputHeight = context.getInputShape()[1];
         float[] inputTensor = new float[3 * inputWidth * inputHeight];
         try (OpenCVFrameConverter.ToMat toMat = new OpenCVFrameConverter.ToMat()) {
             Mat srcMat = toMat.convertToMat(frame);
-            // opencv_imgcodecs.imwrite("origin"+new
-            // Random().nextInt(1000000)+".png",srcMat);
-            // log.info("srcMat是null吗？,{}",srcMat==null);
-            // opencv_imgcodecs.imwrite("test.jpg", srcMat);
+            // log.info("srcMat是null吗？{}",srcMat==null);
             Mat letterboxed = letterbox(srcMat, context);
             // context.getOriginMats().add(srcMat.clone());
             srcMat.release();

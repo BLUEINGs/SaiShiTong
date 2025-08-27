@@ -26,6 +26,7 @@ public class FrameLogger {
     private final int saveInterval = 60; // 保存间隔（秒）
     private final String saveDir = "./game_logs";
     private final List<GameEvent> frameEvents = new ArrayList<>();
+    private final List<GameEvent> recentFrames = new ArrayList<>();
     private long lastSaveTime = System.currentTimeMillis();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -188,7 +189,7 @@ public class FrameLogger {
         return "";
     }
 
-    public void logFrame(Mat frame, Frame rawFrame,
+    public GameEvent logFrame(Mat frame, Frame rawFrame,
             float[] ballBox,
             List<float[]> basketBoxes,
             float[] holderBox,
@@ -209,5 +210,6 @@ public class FrameLogger {
             saveLogs();
             lastSaveTime = currentTime;
         }
+        return event;
     }
 }

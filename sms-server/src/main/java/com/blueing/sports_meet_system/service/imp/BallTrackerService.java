@@ -1,11 +1,13 @@
 package com.blueing.sports_meet_system.service.imp;
 
+import com.blueing.sports_meet_system.entity.GameEvent;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.OpenCVFrameConverter;
 import org.bytedeco.opencv.global.opencv_core;
 import org.bytedeco.opencv.global.opencv_imgproc;
+import org.bytedeco.opencv.global.opencv_imgcodecs;
 import org.bytedeco.opencv.opencv_core.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,12 +36,16 @@ public class BallTrackerService {
         this.toMat = new OpenCVFrameConverter.ToMat(); // 该方法底池是一个对象池，对象池有三个Mat对象，转换结果随机覆盖这三个，返回引用只可能是这三个
     }
 
-    public List<Mat> processFrameBatch(List<Frame> frames) throws Exception {
+    public List<Frame> processFrameBatch(List<Frame> frames) throws Exception {
+        List<GameEvent> eventLogs = new ArrayList<>();
+
         // 1. 批量检测
         List<List<float[]>> batchResults = detectorService.detect(frames);
-        List<Mat> processedFrames = new ArrayList<>();
-
+        if(batchResults==null){
+            return null;
+        }
         // 2. 处理每一帧
+        List<Frame> results=new ArrayList<>();
         for (int i = 0; i < frames.size(); i++) {
             Frame frame = frames.get(i);
             List<float[]> frameResults = batchResults.get(i);
@@ -58,7 +64,7 @@ public class BallTrackerService {
             for (float[] box : frameResults) {
                 if ((int) box[5] == 1) { // 篮筐
                     basketBoxes.add(box);
-                } else if ((int) box[5] == 2) { // 持球人
+                } else if ((int) box[5] == 2) { // 运动员
                     holderBox = box;
                 } else if ((int) box[5] == 4) { // 投篮动作
                     shootingBoxes.add(box);
@@ -66,8 +72,9 @@ public class BallTrackerService {
             }
 
             // 记录日志
-            frameLogger.logFrame(mat, frame, ballBox, basketBoxes, holderBox, shootingBoxes);
+            eventLogs.add(frameLogger.logFrame(mat, frame, ballBox, basketBoxes, holderBox, shootingBoxes));
 
+            //暂时停止绘制图片
             if (ballBox != null) {
                 // 绘制边界框
                 opencv_imgproc.rectangle(
@@ -85,11 +92,12 @@ public class BallTrackerService {
                 // 绘制轨迹
                 drawTrail(mat);
             }
-            processedFrames.add(mat);
+            // opencv_imgcodecs.imwrite("./test/"+i+".png",mat);
+            results.add(toMat.convert(mat).clone());
             // mat.release();
         }
 
-        return processedFrames;
+        return results;
     }
 
     private double calculateDistance(Point2f pos1, Point2f pos2) {

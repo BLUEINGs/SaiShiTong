@@ -1,8 +1,10 @@
 package com.blueing.sports_meet_system;
 
 import ai.onnxruntime.OrtException;
+import com.blueing.sports_meet_system.entity.GameEvent;
 import com.blueing.sports_meet_system.service.imp.BallTrackerService;
 import com.blueing.sports_meet_system.service.imp.DetectorServiceA;
+import com.blueing.sports_meet_system.service.imp.RtmpStreamService;
 import com.blueing.sports_meet_system.service.imp.RtmpStreamer;
 import lombok.extern.slf4j.Slf4j;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
@@ -33,9 +35,16 @@ class SportsMeetSystemApplicationTests {
 
     @Autowired
     private RtmpStreamer rtmpStreamer;
+    @Autowired
+    private RtmpStreamService rtmpStreamService;
 
     @Test
-    void testBallTracking() throws OrtException, FrameGrabber.Exception {
+    public void testPullAndPush(){
+        rtmpStreamService.pullAndPush("rtmp://localhost/live/livestream",3);
+    }
+
+    @Test
+    void testBallTracking() throws Exception {
         try (FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(
                 "D:\\Users\\王士豪\\Videos\\篮球素材\\video.mkv")) {
             grabber.start();
@@ -44,19 +53,21 @@ class SportsMeetSystemApplicationTests {
             List<Frame> frameBatch = new ArrayList<>();
             Frame frame;
 
+            List<GameEvent> gameEvents;
             while ((frame = grabber.grab()) != null) {
                 if (frame.image == null) {
                     continue;
                 }
 
                 frameBatch.add(frame.clone()); // 需要clone以保留帧
-
                 if (frameBatch.size() >= batchSize) {
                     // 处理一批帧
+                    gameEvents = ballTrackerService.processFrameBatch(frameBatch);
                     try {
-                        List<Mat> processedFrames = ballTrackerService.processFrameBatch(frameBatch);
+                        for (GameEvent event : gameEvents) {
+                            log.info(event.toString());
+                        }
                         // 这里可以添加显示或保存处理后的帧的逻辑
-                        saveProcessedFrames(processedFrames);
                     } catch (Exception e) {
                         log.error("处理帧批次时发生错误", e);
                     }
@@ -68,8 +79,7 @@ class SportsMeetSystemApplicationTests {
             // 处理最后一批（可能不足30帧）
             if (!frameBatch.isEmpty()) {
                 try {
-                    List<Mat> processedFrames = ballTrackerService.processFrameBatch(frameBatch);
-                    saveProcessedFrames(processedFrames);
+                    gameEvents =ballTrackerService.processFrameBatch(frameBatch);
                 } catch (Exception e) {
                     log.error("处理最后一批帧时发生错误", e);
                 }

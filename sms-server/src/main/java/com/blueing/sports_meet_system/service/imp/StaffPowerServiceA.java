@@ -9,7 +9,6 @@ import com.blueing.sports_meet_system.service.StaffPowerService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import javax.websocket.*;
 
 import java.util.Arrays;
 import java.util.List;

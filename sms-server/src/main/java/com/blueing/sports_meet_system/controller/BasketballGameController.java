@@ -1,6 +1,6 @@
 package com.blueing.sports_meet_system.controller;
 
-import com.blueing.sports_meet_system.pojo.BasketballRecords;
+import com.blueing.sports_meet_system.pojo.Basketball;
 import com.blueing.sports_meet_system.pojo.Result;
 import com.blueing.sports_meet_system.service.imp.BasketballGameServiceA;
 import lombok.extern.slf4j.Slf4j;
@@ -31,21 +31,21 @@ public class BasketballGameController {
         return Result.success(null);
     }
 
-    @GetMapping("/saishitong/scoringSituation")
+    @GetMapping("/saishitong/scoringRecords")
     public Result<Object> queryTeamScoringDetailsRecord(Integer spId) {
-        List<BasketballRecords> contingents= basketballGameServiceA.queryTeamScoringDetailsRecord(spId);
+        List<Basketball> contingents= basketballGameServiceA.queryTeamScoringDetailsRecord(spId);
         return Result.success(contingents);
     }
 
-    @GetMapping("/saishitong/scoringRecord")
+    @GetMapping("/saishitong/totalScore")
     public Result<Object>  queryTeamScore(Integer spId) {
-        List<BasketballRecords> teamScores = basketballGameServiceA.queryTeamScores(spId);
+        List<Basketball> teamScores = basketballGameServiceA.queryTeamScores(spId);
         return Result.success(teamScores);
     }
 
     @GetMapping("/saishitong/basketballEvent")
     public Result<Object> queryBasketballEvent(){
-        List<BasketballRecords> BasketballEvents = basketballGameServiceA.queryBasketballEvent();
+        List<Basketball> BasketballEvents = basketballGameServiceA.queryBasketballEvent();
         return Result.success(BasketballEvents);
     }
 
@@ -57,26 +57,26 @@ public class BasketballGameController {
 
     @GetMapping("/saishitong/ai/basketballEvent")
     public Result<Object> queryAiBasketballEvent(){
-        List<BasketballRecords> BasketballEvents = basketballGameServiceA.queryBasketballEvent();
+        List<Basketball> BasketballEvents = basketballGameServiceA.queryBasketballEvent();
         return Result.success(BasketballEvents);
     }
 
     @GetMapping("/saishitong/ai/contingent")
     public Result<Object> queryAiContingent(Integer spId){
-        List<BasketballRecords> contingents = basketballGameServiceA.queryAiContingent(spId);
+        List<Basketball> contingents = basketballGameServiceA.queryAiContingent(spId);
         return Result.success(contingents);
     }
 
     @GetMapping("/saishitong/ai/schedule")
     public Result<Object> queryAiSchedule(Integer spId){
-        BasketballRecords basketballRecords = basketballGameServiceA.querySchedule(spId);
-        return Result.success(basketballRecords);
+        Basketball basketball = basketballGameServiceA.querySchedule(spId);
+        return Result.success(basketball);
     }
 
     @GetMapping("/saishitong/schedule")
     public Result<Object> queryschedule(Integer spId){
-        BasketballRecords basketballRecords = basketballGameServiceA.querySchedule(spId);
-        return Result.success(basketballRecords);
+        Basketball basketball = basketballGameServiceA.querySchedule(spId);
+        return Result.success(basketball);
     }
 
 }
