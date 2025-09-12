@@ -2,6 +2,8 @@ package com.blueing.sports_meet_system.service;
 
 
 import com.blueing.sports_meet_system.pojo.Basketball;
+import com.blueing.sports_meet_system.pojo.TeamColor;
+
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -19,7 +21,7 @@ public interface BasketballGameService {
 
     List<Basketball> queryBasketballEvent();
 
-    List<Basketball> queryAiContingent(Integer spId);
+    List<TeamColor> queryAiContingent(Integer spId);
 
     Basketball querySchedule(Integer spId);
 }

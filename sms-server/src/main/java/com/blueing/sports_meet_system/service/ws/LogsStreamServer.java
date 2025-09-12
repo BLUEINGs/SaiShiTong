@@ -93,6 +93,9 @@ public class LogsStreamServer {
             return;
         }
         for (Session session : sessionList) {
+            if(logs.isEmpty()){
+                return;
+            }
             try {
                 session.getBasicRemote().sendText(objectMapper.writeValueAsString(logs));
             } catch (IOException e) {

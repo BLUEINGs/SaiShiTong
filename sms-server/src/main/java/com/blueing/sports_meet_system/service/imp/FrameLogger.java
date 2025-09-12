@@ -4,31 +4,36 @@ import com.blueing.sports_meet_system.entity.BallPosition;
 import com.blueing.sports_meet_system.entity.BasketPosition;
 import com.blueing.sports_meet_system.entity.GameEvent;
 import com.blueing.sports_meet_system.entity.PlayerAction;
+import com.blueing.sports_meet_system.mapper.BasketballGameMapper;
+import com.blueing.sports_meet_system.service.BasketballGameService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.opencv.opencv_core.*;
 import org.bytedeco.opencv.global.opencv_core;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import jakarta.annotation.PostConstruct;
+
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.time.ZonedDateTime;
+import java.util.*;
 
 @Slf4j
 @Component
 public class FrameLogger {
     private final int saveInterval = 60; // 保存间隔（秒）
     private final String saveDir = "./game_logs";
-    private final List<GameEvent> frameEvents = new ArrayList<>();
-    private final List<GameEvent> recentFrames = new ArrayList<>();
+    private final List<GameEvent> frameEvents = new LinkedList<>();
     private long lastSaveTime = System.currentTimeMillis();
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @Autowired
+    private BasketballGameService basketballGameService;
 
     @PostConstruct
     public void init() {
@@ -53,25 +58,24 @@ public class FrameLogger {
         if (roi.x() < 0 || roi.y() < 0 ||
                 roi.x() + roi.width() > frame.cols() ||
                 roi.y() + roi.height() > frame.rows()) {
-            return new int[] { 0, 0, 0 };
+            return new int[]{0, 0, 0};
         }
 
         Mat upperBody = new Mat(frame, roi);
         Scalar meanColor = opencv_core.mean(upperBody);
         upperBody.release();
 
-        return new int[] {
+        return new int[]{
                 (int) meanColor.get(2), // R
                 (int) meanColor.get(1), // G
                 (int) meanColor.get(0) // B
         };
     }
 
-    private GameEvent createEvent(Mat frame, Frame rawFrame,
-            float[] ballBox,
-            List<float[]> basketBoxes,
-            float[] holderBox,
-            List<float[]> shootingBoxes) {
+    private GameEvent createEvent(Frame frame, String eventType,
+                                  float[] ballBox, float[] rimBox,
+                                  float[] holderBox, int[] holderColor,
+                                  boolean isShooting, Integer teId, boolean isScored) {
         // 设置球的位置
         BallPosition ballPos = null;
         if (ballBox != null) {
@@ -80,62 +84,33 @@ public class FrameLogger {
             ballPos = new BallPosition(centerX, centerY);
         }
 
-        // 设置篮筐位置（如果有多个，取最近的）
+        // 设置篮筐位置
         BasketPosition basketPos = null;
-        if (!basketBoxes.isEmpty() && ballPos != null) {
-            float[] nearestBasket = basketBoxes.get(0);
-            double minDist = Double.MAX_VALUE;
-
-            for (float[] box : basketBoxes) {
-                float centerX = (box[0] + box[2]) / 2;
-                float centerY = (box[1] + box[3]) / 2;
-                double dist = Math.pow(centerX - ballPos.getX(), 2) +
-                        Math.pow(centerY - ballPos.getY(), 2);
-                if (dist < minDist) {
-                    minDist = dist;
-                    nearestBasket = box;
-                }
-            }
-
+        if (rimBox != null) {
             basketPos = new BasketPosition(
-                    (nearestBasket[0] + nearestBasket[2]) / 2,
-                    (nearestBasket[1] + nearestBasket[3]) / 2);
+                    (rimBox[0] + rimBox[2]) / 2,
+                    (rimBox[1] + rimBox[3]) / 2);
         }
 
-        // 判断事件类型和创建相应的PlayerAction
+        // 创建PlayerAction
         PlayerAction playerAction = null;
-        String eventType = "ball_flying"; // 默认状态
-
-        if (holderBox != null) {
-            // 有持球人，判断是传球还是投篮
-            int[] color = getUpperBodyColor(frame, holderBox);
-            boolean isShooting = !shootingBoxes.isEmpty();
-
+        if (holderBox != null && holderColor != null) {
             playerAction = new PlayerAction(
-                    isShooting ? "shooting" : "passing",
-                    color,
+                    isShooting ? "shooting" : "holding",
+                    holderColor,
+                    teId,
                     1.0f);
-            eventType = "player_action";
-        } else if (!basketBoxes.isEmpty() && ballPos != null) {
-            // 检查是否进球
-            for (float[] basketBox : basketBoxes) {
-                if (ballPos.getX() > basketBox[0] && ballPos.getX() < basketBox[2] &&
-                        ballPos.getY() > basketBox[1] && ballPos.getY() < basketBox[3]) {
-                    eventType = "ball_in";
-                    break;
-                }
-            }
         }
 
         return new GameEvent(
-                rawFrame.timestamp,
+                frame.timestamp,
                 eventType,
                 ballPos,
                 basketPos,
                 playerAction);
     }
 
-    private void saveLogs() {
+    private void saveLogs(Integer spId) {
         if (frameEvents.isEmpty()) {
             return;
         }
@@ -143,7 +118,8 @@ public class FrameLogger {
         try {
             String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss")
                     .format(new Date());
-            Path filePath = Paths.get(saveDir, "game_log_" + timestamp + ".json");
+            new File(saveDir + "/" + spId).mkdir();
+            Path filePath = Paths.get(saveDir + "/" + spId, "game_log_" + timestamp + ".json");
 
             objectMapper.writerWithDefaultPrettyPrinter()
                     .writeValue(filePath.toFile(), frameEvents);
@@ -170,17 +146,19 @@ public class FrameLogger {
             return "黄色";
         else if (r > 200 && g > 200 && b > 200)
             return "白色";
-        else if (r < 100 && g < 100 && b < 100)
+        else if (r < 50 && g < 50 && b < 50)
             return "黑色";
+        else if (r < 100 && g < 100 && b < 100)
+            return "灰色";
         else
             return String.format("RGB(%d,%d,%d)", r, g, b);
     }
 
     private String eventToText(GameEvent event) {
-        if ("player_action".equals(event.getEventType()) && event.getPlayerAction() != null) {
+        if (("shooting".equals(event.getEventType()) || "holding".equals(event.getEventType())) && event.getPlayerAction() != null) {
             String colorName = getColorName(event.getPlayerAction().getPlayerColor());
             String action = "shooting".equals(event.getPlayerAction().getActionType()) ? "投篮" : "传球";
-            return String.format("%s队员正在%s", colorName, action);
+            return String.format("%s %s队队员正在%s", colorName, event.getPlayerAction().getTeId(), action);
         } else if ("ball_flying".equals(event.getEventType())) {
             return "球在空中飞行";
         } else if ("ball_in".equals(event.getEventType())) {
@@ -189,25 +167,76 @@ public class FrameLogger {
         return "";
     }
 
-    public GameEvent logFrame(Mat frame, Frame rawFrame,
-            float[] ballBox,
-            List<float[]> basketBoxes,
-            float[] holderBox,
-            List<float[]> shootingBoxes) {
-        GameEvent event = createEvent(frame, rawFrame, ballBox, basketBoxes,
-                holderBox, shootingBoxes);
-        frameEvents.add(event);
+    public GameEvent logFrame(Integer spId, Frame frame, String eventType,
+                              float[] ballBox, float[] rimBox,
+                              float[] holderBox, int[] holderColor, Integer teId,
+                              boolean isShooting, boolean isScored) {
+        GameEvent event = createEvent(frame, eventType, ballBox, rimBox,
+                holderBox, holderColor, isShooting, teId, isScored);
 
-        // 打印自然语言描述
-        String description = eventToText(event);
-        if (!description.isEmpty()) {
-            log.info(description);
+
+        if (frameEvents.isEmpty()) {
+            log.info("我是空的");
+            frameEvents.add(event);
+        }
+
+        //进球判断逻辑
+        if (!event.equals(frameEvents.getLast()) && !"unknown".equals(event.getEventType())) {
+            String description = eventToText(event);
+            // 打印自然语言描述
+            if (!description.isEmpty()) {
+                log.info(description);
+            }
+            //宏处理：判断谁把球投进的
+            if ("ball_in".equals(event.getEventType())) {
+                // 如果球进了
+                int count = 0;
+                GameEvent lastShooting=null;
+                GameEvent lastHolding = null;
+                ListIterator<GameEvent> iterator = frameEvents.listIterator(frameEvents.size());
+                while (iterator.hasPrevious()) {
+                    GameEvent previousEvent = iterator.previous();
+                    if ("holding".equals(previousEvent.getEventType())) {
+                        lastHolding = previousEvent;
+                    } else if ("shooting".equals(previousEvent.getEventType())) {
+                        lastShooting = previousEvent;
+                        break;
+                    }else if("ball_in".equals(previousEvent.getEventType()) && count<3){
+                        //如果前三个事件内直接是进球，球不可能自己进，我们认为重复或者球没进
+                        return null;
+                    }
+                    count++;
+                }
+                //大情况一：如果找到运球人了
+                if (lastHolding!=null){
+                    //情况一：只找到了上一个运球人
+                    if(lastShooting==null){
+                        basketballGameService.addfraction(lastHolding.getPlayerAction().getTeId(), 2);
+                        //情况二：找到了上一个运球人和上一个投篮人，两人是同一队
+                    } else if(lastHolding.getPlayerAction().getTeId()==lastShooting.getPlayerAction().getTeId()){
+                        basketballGameService.addfraction(lastHolding.getPlayerAction().getTeId(), 2);
+                        //情况三：两人是不同队
+                    }else{
+                        basketballGameService.addfraction(lastHolding.getPlayerAction().getTeId(), 2);
+                    }
+                    event.setPlayerAction(lastHolding.getPlayerAction());
+                    //TO DO 分数判断、更致信的
+                    //大情况二：如果找到投篮人了
+                }else if(lastShooting!=null){
+                    basketballGameService.addfraction(lastShooting.getPlayerAction().getTeId(), 2);
+                    event.setPlayerAction(lastShooting.getPlayerAction());
+                }
+            }
+
+            frameEvents.add(event);
+        } else {
+            return null;
         }
 
         // 检查是否需要保存
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastSaveTime >= saveInterval * 1000) {
-            saveLogs();
+            saveLogs(spId);
             lastSaveTime = currentTime;
         }
         return event;

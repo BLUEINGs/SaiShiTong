@@ -2,6 +2,7 @@ package com.blueing.sports_meet_system.mapper;
 
 import com.blueing.sports_meet_system.pojo.*;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
 import java.time.ZonedDateTime;
@@ -33,7 +34,7 @@ public interface BasketballGameMapper {
 
     List<Basketball> queryBasketballEvent();
 
-    List<Basketball> queryAiContingent(Integer spId);
+    List<TeamColor> queryAiContingent(Integer spId);
 
     List<Basketball> querySchedule(Integer spId);
 
@@ -41,4 +42,12 @@ public interface BasketballGameMapper {
 
     List<Basketball> queryWillStartBasketball(ZonedDateTime dateTime);
 
+    @Update("update basketballs set results=#{url} where sp_id=#{spId}")
+    void setResultLink(String url,Integer spId);
+
+    @Select("select sp_id, name, start_time, end_time, state, rtmp from basketballs where state=3")
+    List<Basketball> queryDoneStartBasketball(ZonedDateTime now);
+
+    @Select("select sp_id, name, start_time, end_time, state, rtmp from basketballs where state in (0,3)")
+    List<Basketball> queryNeedStartBasketball(ZonedDateTime now);
 }

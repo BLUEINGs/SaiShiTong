@@ -41,6 +41,8 @@ public class ScoreUpdateServer {
     public void onOpen(Session session, @PathParam("spId") String spId) throws IOException {
         if(basketballGameMapper==null){
             basketballGameMapper=SpringContextHolder.getBean(BasketballGameMapper.class);
+        }
+        if(objectMapper==null){
             objectMapper=SpringContextHolder.getBean(ObjectMapper.class);
         }
         log.info("用户建立spId为：{}的ws链接",spId);
@@ -80,6 +82,12 @@ public class ScoreUpdateServer {
      * @param
      */
     public void sendToAllClient(Integer spId) {
+        if(basketballGameMapper==null){
+            basketballGameMapper=SpringContextHolder.getBean(BasketballGameMapper.class);
+        }
+        if(objectMapper==null){
+            objectMapper=SpringContextHolder.getBean(ObjectMapper.class);
+        }
         try {
             List<Session> sessionList = sessions.get(spId);
             for (Session session : sessionList) {

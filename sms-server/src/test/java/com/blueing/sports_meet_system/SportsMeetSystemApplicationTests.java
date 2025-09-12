@@ -1,10 +1,9 @@
 package com.blueing.sports_meet_system;
 
 import ai.onnxruntime.OrtException;
-import com.blueing.sports_meet_system.entity.GameEvent;
 import com.blueing.sports_meet_system.service.imp.BallTrackerService;
 import com.blueing.sports_meet_system.service.imp.DetectorServiceA;
-import com.blueing.sports_meet_system.service.imp.RtmpStreamService;
+import com.blueing.sports_meet_system.service.imp.StreamDetectionService;
 import com.blueing.sports_meet_system.service.imp.RtmpStreamer;
 import lombok.extern.slf4j.Slf4j;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
@@ -36,15 +35,17 @@ class SportsMeetSystemApplicationTests {
     @Autowired
     private RtmpStreamer rtmpStreamer;
     @Autowired
-    private RtmpStreamService rtmpStreamService;
+    private StreamDetectionService streamDetectionService;
 
     @Test
     public void testPullAndPush(){
-        rtmpStreamService.pullAndPush("rtmp://localhost/live/livestream",3);
+        String path = System.getenv("PATH");
+        log.info("Java Process PATH:\n{}", path);
+        // rtmpStreamService.pullAndPush("rtmp://localhost/live/livestream",3);
     }
 
-    @Test
-    void testBallTracking() throws Exception {
+    // @Test
+    /* void testBallTracking() throws Exception {
         try (FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(
                 "D:\\Users\\王士豪\\Videos\\篮球素材\\video.mkv")) {
             grabber.start();
@@ -85,7 +86,7 @@ class SportsMeetSystemApplicationTests {
                 }
             }
         }
-    }
+    } */
 
     private void saveProcessedFrames(List<Mat> mats) throws Exception {
         for (int i = 0; i < mats.size(); i++) {

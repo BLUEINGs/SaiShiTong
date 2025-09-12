@@ -27,7 +27,7 @@ public class JavaCvFramePusher implements FramePusher {
 
     // 构造函数：初始化推流器参数
     public JavaCvFramePusher(String pushUrl, int width, int height) {
-        this(pushUrl, width, height, 30, 2000 * 1000);
+        this(pushUrl, width, height, 20, 2000 * 1000);
     }
 
     public JavaCvFramePusher(String pushUrl, int width, int height, int frameRate, int bitRate) {
@@ -38,7 +38,11 @@ public class JavaCvFramePusher implements FramePusher {
         this.bitRate = bitRate;
         this.frameQueue = new LinkedBlockingQueue<>(1024);
         // 判断是否为本地文件（支持 "file://" 前缀或直接路径如 "D:/test.mp4"）
-        this.isLocalFile = pushUrl.startsWith("file://") || pushUrl.contains("/") || pushUrl.contains("\\");
+        this.isLocalFile = (pushUrl.startsWith("file://") ||
+                (pushUrl.contains("/") || pushUrl.contains("\\")) &&
+                        !pushUrl.startsWith("rtmp://") &&  // 排除RTMP协议
+                        !pushUrl.startsWith("rtsp://") &&  // 排除RTSP协议
+                        !pushUrl.startsWith("http://"));   // 排除HTTP协议（按需添加其他网络协议）
     }
 
     /**

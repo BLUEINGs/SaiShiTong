@@ -1,18 +1,20 @@
 package com.blueing.sports_meet_system.service.imp;
 
 import com.blueing.sports_meet_system.entity.GameEvent;
+import com.blueing.sports_meet_system.pojo.TeamColor;
+import com.blueing.sports_meet_system.utils.ColorUtils;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.OpenCVFrameConverter;
 import org.bytedeco.opencv.global.opencv_core;
 import org.bytedeco.opencv.global.opencv_imgproc;
-import org.bytedeco.opencv.global.opencv_imgcodecs;
 import org.bytedeco.opencv.opencv_core.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.Arrays;
 
 @Slf4j
 @Service
@@ -36,74 +38,231 @@ public class BallTrackerService {
         this.toMat = new OpenCVFrameConverter.ToMat(); // 该方法底池是一个对象池，对象池有三个Mat对象，转换结果随机覆盖这三个，返回引用只可能是这三个
     }
 
-    public List<Frame> processFrameBatch(List<Frame> frames) throws Exception {
+    private static final float IOU_THRESHOLD = 0.6f; // IoU阈值
+
+    private float calculateIoU(float[] box1, float[] box2) {
+        // 计算两个框的交集区域
+        float x1 = Math.max(box1[0], box2[0]);
+        float y1 = Math.max(box1[1], box2[1]);
+        float x2 = Math.min(box1[2], box2[2]);
+        float y2 = Math.min(box1[3], box2[3]);
+
+        // 如果没有交集，返回0
+        if (x2 < x1 || y2 < y1) {
+            return 0.0f;
+        }
+
+        // 计算交集面积
+        float intersectionArea = (x2 - x1) * (y2 - y1);
+
+        // 计算两个框的面积
+        float box1Area = (box1[2] - box1[0]) * (box1[3] - box1[1]);
+        float box2Area = (box2[2] - box2[0]) * (box2[3] - box2[1]);
+
+        // 计算并集面积
+        float unionArea = box1Area + box2Area - intersectionArea;
+
+        // 返回IoU
+        return intersectionArea / unionArea;
+    }
+
+    private boolean isContained(float[] box1, float[] box2) {
+        return box1[0] >= box2[0] && box1[1] >= box2[1] &&
+                box1[2] <= box2[2] && box1[3] <= box2[3];
+    }
+
+    private int[] getUpperBodyColor(Mat frame, float[] box) {
+        int x1 = (int) box[0];
+        int y1 = (int) box[1];
+        int x2 = (int) box[2];
+        int y2 = (int) box[3];
+
+        // 只取上半身部分
+        int upperHeight = (y2 - y1) / 2;
+        Rect roi = new Rect(x1, y1, x2 - x1, upperHeight);
+
+        // 确保ROI在图像范围内
+        if (roi.x() < 0 || roi.y() < 0 ||
+                roi.x() + roi.width() > frame.cols() ||
+                roi.y() + roi.height() > frame.rows()) {
+            return new int[]{0, 0, 0};
+        }
+
+        Mat upperBody = new Mat(frame, roi);
+        Scalar meanColor = opencv_core.mean(upperBody);
+        upperBody.release();
+
+        return new int[]{
+                (int) meanColor.get(2), // R
+                (int) meanColor.get(1), // G
+                (int) meanColor.get(0) // B
+        };
+    }
+
+    public Object[] processFrameBatch(List<Frame> frames, Integer spId, List<TeamColor> teamColors) throws Exception {
         List<GameEvent> eventLogs = new ArrayList<>();
 
         // 1. 批量检测
         List<List<float[]>> batchResults = detectorService.detect(frames);
-        if(batchResults==null){
+        if (batchResults == null) {
             return null;
         }
         // 2. 处理每一帧
-        List<Frame> results=new ArrayList<>();
+        List<Frame> results = new ArrayList<>();
         for (int i = 0; i < frames.size(); i++) {
             Frame frame = frames.get(i);
             List<float[]> frameResults = batchResults.get(i);
 
-            // 找到当前帧中最可能的球
-            float[] ballBox = trackBall(frameResults);
-
-            // 如果找到球，更新位置并绘制
-            Mat mat = toMat.convert(frame).clone();
-
-            // 收集其他对象的检测框
-            List<float[]> basketBoxes = new ArrayList<>();
+            // 收集各类对象的检测框
+            float[] ballBox = null;
+            List<float[]> rimBoxes = new ArrayList<>();
+            List<float[]> playerBoxes = new ArrayList<>();
             List<float[]> shootingBoxes = new ArrayList<>();
-            float[] holderBox = null;
+            boolean madeShot = false;
 
             for (float[] box : frameResults) {
-                if ((int) box[5] == 1) { // 篮筐
-                    basketBoxes.add(box);
-                } else if ((int) box[5] == 2) { // 运动员
-                    holderBox = box;
-                } else if ((int) box[5] == 4) { // 投篮动作
-                    shootingBoxes.add(box);
+                int category = (int) box[5];
+                switch (category) {
+                    case 0: // 篮球
+                        if (ballBox == null || box[4] > ballBox[4]) {
+                            ballBox = box;
+                        }
+                        break;
+                    case 1: // made
+                        madeShot = true;
+                        break;
+                    case 2: // 运动员
+                        playerBoxes.add(box);
+                        break;
+                    case 3: // rim (篮筐)
+                        rimBoxes.add(box);
+                        break;
+                    case 4: // 投篮动作
+                        shootingBoxes.add(box);
+                        break;
                 }
             }
 
-            // 记录日志
-            eventLogs.add(frameLogger.logFrame(mat, frame, ballBox, basketBoxes, holderBox, shootingBoxes));
+            Mat mat = toMat.convert(frame).clone();
 
-            //暂时停止绘制图片
+            // 分析当前帧的状态
+            String eventType = "unknown";
+            float[] holderBox = null;
+            int[] holderColor = null;
+            boolean isShooting = false;
+            boolean isScored = false;
+
+            // 如果有球，进行状态判断
+            Integer teId=null;
             if (ballBox != null) {
-                // 绘制边界框
-                opencv_imgproc.rectangle(
-                        mat,
-                        new Rect(
-                                (int) ballBox[0], (int) ballBox[1],
-                                (int) (ballBox[2] - ballBox[0]),
-                                (int) (ballBox[3] - ballBox[1])),
-                        new Scalar(0, 255, 0, 0));
+                // 1. 检查是否进球
+                isScored = madeShot;
+                if (!isScored && !rimBoxes.isEmpty()) {
+                    for (float[] rimBox : rimBoxes) {
+                        float iou = calculateIoU(ballBox, rimBox);
+                        if (iou >= IOU_THRESHOLD || isContained(ballBox, rimBox)) {
+                            isScored = true;
+                            break;
+                        }
+                    }
+                }
 
-                // 更新轨迹
+                // 2. 如果没进球，检查是谁在持球
+                if (!isScored) {
+                    float maxIoU = 0;
+                    // 检查与运动员的IoU
+                    for (float[] playerBox : playerBoxes) {
+                        float iou = calculateIoU(ballBox, playerBox);
+                        if (iou > maxIoU) {
+                            maxIoU = iou;
+                            holderBox = playerBox;
+                            isShooting = false;
+                        }
+                    }
+                    // 检查与投篮动作的IoU
+                    for (float[] shootBox : shootingBoxes) {
+                        float iou = calculateIoU(ballBox, shootBox);
+                        if (iou > maxIoU) {
+                            maxIoU = iou;
+                            holderBox = shootBox;
+                            isShooting = true;
+                        }
+                    }
+
+                    // 如果有持球人，获取其上半身颜色
+                    if (holderBox != null) {
+                        holderColor = getUpperBodyColor(mat, holderBox);
+                        TeamColor teamColor1 = teamColors.get(0);
+                        TeamColor teamColor2 = teamColors.get(1);
+                        if(ColorUtils.calculateEuclideanDistance(teamColor1.getRgb(),holderColor)<ColorUtils.calculateEuclideanDistance(teamColor2.getRgb(),holderColor)){
+                            teId=teamColor1.getTeId();
+                        }else {
+                            teId=teamColor2.getTeId();
+                        }
+                    }
+                }
+            }
+
+            // 根据状态设置事件类型
+            if (isScored) {
+                eventType = "ball_in";
+            } else if (holderBox != null) {
+                // log.info("这一帧就是在持球");
+                eventType = isShooting ? "shooting" : "holding";
+            } else if (ballBox != null) {
+                eventType = "ball_flying";
+            }
+
+            // 记录日志
+            GameEvent event = frameLogger.logFrame(spId, frame, eventType, ballBox,
+                    !rimBoxes.isEmpty() ? rimBoxes.get(0) : null,
+                    holderBox, holderColor, teId,isShooting, isScored);
+            if(event!=null){
+                eventLogs.add(event);
+            }
+
+            // 绘制跟踪结果
+            // 1. 绘制球的边界框和轨迹
+            if (ballBox != null) {
+                // 绘制球的边界框（绿色）
+                Rect ballRect = new Rect(
+                        new Point((int) ballBox[0], (int) ballBox[1]),
+                        new Point((int) ballBox[2], (int) ballBox[3]));
+                opencv_imgproc.rectangle(mat, ballRect, new Scalar(0, 255, 0, 0), 2, opencv_imgproc.LINE_AA, 0);
+                // i参数是粗细，i1是线条类型，LINE_AA是抗锯齿，i2是位移，此处不需要
+
+                // 更新并绘制轨迹
                 Point2f center = getBallCenter(ballBox);
                 updateTrail(center);
-
-                // 绘制轨迹
                 drawTrail(mat);
             }
-            // opencv_imgcodecs.imwrite("./test/"+i+".png",mat);
+
+            // 2. 绘制持球人的边界框（蓝色）
+            if (holderBox != null) {
+                Rect holderRect = new Rect(
+                        new Point((int) holderBox[0], (int) holderBox[1]),
+                        new Point((int) holderBox[2], (int) holderBox[3]));
+                opencv_imgproc.rectangle(mat, holderRect, new Scalar(255, 0, 0, 0), 1, opencv_imgproc.LINE_AA, 0);
+            }
+
+            // 3. 如果有made，绘制made的边界框（黄色）
+            if (madeShot) {
+                for (float[] box : frameResults) {
+                    if ((int) box[5] == 1) { // made类别
+                        Rect madeRect = new Rect(
+                                new Point((int) box[0], (int) box[1]),
+                                new Point((int) box[2], (int) box[3]));
+                        opencv_imgproc.rectangle(mat, madeRect, new Scalar(0, 255, 255, 0), 2, opencv_imgproc.LINE_AA, 0);
+                        break; // 只画第一个made框
+                    }
+                }
+            }
+
             results.add(toMat.convert(mat).clone());
-            // mat.release();
+            mat.release();
         }
 
-        return results;
-    }
-
-    private double calculateDistance(Point2f pos1, Point2f pos2) {
-        float dx = pos1.x() - pos2.x();
-        float dy = pos1.y() - pos2.y();
-        return Math.sqrt(dx * dx + dy * dy);
+        return new Object[]{results, eventLogs};
     }
 
     private Point2f getBallCenter(float[] box) {
@@ -113,47 +272,7 @@ public class BallTrackerService {
         );
     }
 
-    private float[] trackBall(List<float[]> results) {
-        if (results.isEmpty()) {
-            return null;
-        }
-
-        List<float[]> balls = new ArrayList<>();
-        // 只保留类别为0（篮球）的检测结果
-        for (float[] box : results) {
-            // box[5]是类别ID
-            if ((int) box[5] == 0) { // 假设0是篮球类别
-                balls.add(box);
-            }
-        }
-
-        if (balls.isEmpty()) {
-            return null;
-        }
-
-        if (balls.size() == 1) {
-            lastBallPosition = getBallCenter(balls.get(0));
-            return balls.get(0);
-        }
-
-        // 如果检测到多个球
-        if (lastBallPosition == null) {
-            // 没有历史位置，选择置信度最高的
-            float[] bestBall = Collections.max(balls,
-                    (a, b) -> Float.compare(a[4], b[4])); // box[4]是置信度
-            lastBallPosition = getBallCenter(bestBall);
-            return bestBall;
-        }
-
-        // 有历史位置，选择最近的
-        float[] nearestBall = Collections.min(balls,
-                (a, b) -> Double.compare(
-                        calculateDistance(lastBallPosition, getBallCenter(a)),
-                        calculateDistance(lastBallPosition, getBallCenter(b))));
-
-        lastBallPosition = getBallCenter(nearestBall);
-        return nearestBall;
-    }
+    // 移除了trackBall方法，因为我们现在使用IoU来判断球的状态
 
     private void updateTrail(Point2f center) {
         double currentTime = (double) opencv_core.getTickCount() / opencv_core.getTickFrequency();
@@ -161,7 +280,9 @@ public class BallTrackerService {
         // 清理过期的轨迹点
         while (!frameTimestamps.isEmpty() &&
                 currentTime - frameTimestamps.getFirst() > trailSeconds) {
-            ballPositions.removeFirst();
+            if(!ballPositions.isEmpty()){
+                ballPositions.removeFirst();
+            }
             frameTimestamps.removeFirst();
         }
 
@@ -183,7 +304,7 @@ public class BallTrackerService {
                     frame,
                     new Point((int) prev.x(), (int) prev.y()),
                     new Point((int) curr.x(), (int) curr.y()),
-                    new Scalar(0, 255, 0, 0));
+                    new Scalar(0, 255, 0, 0), 2, opencv_imgproc.LINE_AA, 0);
             prev = curr;
         }
     }

@@ -2,6 +2,7 @@ package com.blueing.sports_meet_system.controller;
 
 import com.blueing.sports_meet_system.pojo.Basketball;
 import com.blueing.sports_meet_system.pojo.Result;
+import com.blueing.sports_meet_system.pojo.TeamColor;
 import com.blueing.sports_meet_system.service.imp.BasketballGameServiceA;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +44,11 @@ public class BasketballGameController {
         return Result.success(teamScores);
     }
 
+    @GetMapping("/saishitong/eventInfo")
+    public Result<Basketball> queryEventInfo(Integer spId){
+        return Result.success(basketballGameServiceA.queryEventInfo(spId));
+    }
+
     @GetMapping("/saishitong/basketballEvent")
     public Result<Object> queryBasketballEvent(){
         List<Basketball> BasketballEvents = basketballGameServiceA.queryBasketballEvent();
@@ -63,7 +69,7 @@ public class BasketballGameController {
 
     @GetMapping("/saishitong/ai/contingent")
     public Result<Object> queryAiContingent(Integer spId){
-        List<Basketball> contingents = basketballGameServiceA.queryAiContingent(spId);
+        List<TeamColor> contingents = basketballGameServiceA.queryAiContingent(spId);
         return Result.success(contingents);
     }
 
@@ -74,7 +80,7 @@ public class BasketballGameController {
     }
 
     @GetMapping("/saishitong/schedule")
-    public Result<Object> queryschedule(Integer spId){
+    public Result<Object> querySchedule(Integer spId){
         Basketball basketball = basketballGameServiceA.querySchedule(spId);
         return Result.success(basketball);
     }

@@ -14,7 +14,7 @@
         insert into bas_duration(sp_id, start_time, end_time, type) values (#{spId},#{startTime},#{endTime},#{type})
     </insert>
     <insert id="addContingent">
-        insert into team_score(sp_id, name,rgb) values (#{spId},#{name},#{rgb})
+        insert into team_score(sp_id, name,color_str) values (#{spId},#{name},#{rgb})
     </insert>
     <update id="modifyTeamScores">
         update team_score set score=#{score} where te_id=#{teId}
@@ -23,16 +23,16 @@
         select sp_id,score from team_score where te_id=#{teId}
     </select>
     <select id="queryScoreRecords" resultType="com.blueing.sports_meet_system.pojo.Basketball">
-        select t.te_id,t.name,t.rgb,s.scoring_time,s.score from team_score t left join score_records s on t.te_id=s.te_id where t.sp_id=#{spId}
+        select t.te_id,t.name,t.color_str,s.scoring_time,s.score from team_score t left join score_records s on t.te_id=s.te_id where t.sp_id=#{spId}
     </select>
     <select id="queryTeamScores" resultType="com.blueing.sports_meet_system.pojo.Basketball">
-        select te_id,name,score from team_score where sp_id=#{spId}
+        select te_id,name,score,color_str from team_score where sp_id=#{spId}
     </select>
     <select id="queryBasketballEvent" resultType="com.blueing.sports_meet_system.pojo.Basketball">
         select * from basketballs
     </select>
-    <select id="queryAiContingent" resultType="com.blueing.sports_meet_system.pojo.Basketball">
-        select te_id,rgb from team_score where sp_id=#{spId}
+    <select id="queryAiContingent" resultType="com.blueing.sports_meet_system.pojo.TeamColor">
+        select te_id,color_str from team_score where sp_id=#{spId}
     </select>
     <select id="querySchedule" resultType="com.blueing.sports_meet_system.pojo.Basketball">
         select type,start_time,end_time from bas_duration where sp_id=#{spId}
@@ -41,7 +41,7 @@
         select * from score_records where te_id=#{teId}
     </select>
     <select id="queryBasketball" resultType="com.blueing.sports_meet_system.pojo.Basketball">
-        select name, start_time, end_time, state, rtmp from basketballs where sp_id=#{spId};
+        select name, start_time, end_time, state, rtmp,results from basketballs where sp_id=#{spId};
     </select>
     <select id="queryWillStartBasketball" resultType="com.blueing.sports_meet_system.pojo.Basketball">
         select sp_id, name, start_time, end_time, state, rtmp from basketballs where #{dateTime} > start_time and state = 0

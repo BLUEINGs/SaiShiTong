@@ -58,7 +58,7 @@ public class DetectorServiceA {
          * 创建会话
          * 会话环境：通过模型和会话设置创建会话的工具
          */
-        String modelPath = "F:\\AiProject\\ultralytics-main\\model_test\\detect_service\\best.onnx";
+        String modelPath = "D:\\Users\\王士豪\\Downloads\\best.onnx";
         session = env.createSession(modelPath, sessionOptions);
         NodeInfo inputInfo = session.getInputInfo().values().iterator().next();
         inputName = inputInfo.getName();
@@ -83,9 +83,8 @@ public class DetectorServiceA {
                     i * 3 * context.getInputShape()[0] * context.getInputShape()[1],
                     3 * context.getInputShape()[0] * context.getInputShape()[1]);
         }
-        try{
-            OnnxTensor inputOnnxTensors = OnnxTensor.createTensor(env, FloatBuffer.wrap(inputTensors),
-                    new long[] { frames.size(), 3, 640, 640 });
+        try(OnnxTensor inputOnnxTensors = OnnxTensor.createTensor(env, FloatBuffer.wrap(inputTensors),
+                new long[] { frames.size(), 3, 640, 640 })){
             Map<String, OnnxTensor> inputs = Map.of(inputName, inputOnnxTensors);
             // 开始执行推理
             OrtSession.Result result = session.run(inputs);
@@ -99,22 +98,6 @@ public class DetectorServiceA {
         return postprocess(context);
     }
 
-    /*
-     * public List<float[]> detect(Frame frame) throws OrtException {
-     * DetectContext context = preprocess(frame,
-     * DetectContext.builder().inputShape(new int[]{640, 640}).build());
-     * float[] inputTensor = context.getInputTensor();
-     * OnnxTensor inputOnnxTensor = OnnxTensor.createTensor(env,
-     * FloatBuffer.wrap(inputTensor), new long[]{1, 3, 640, 640});
-     * Map<String, OnnxTensor> inputs = Map.of(inputName, inputOnnxTensor);
-     * OrtSession.Result result = session.run(inputs);
-     * OnnxTensor outputTensor = (OnnxTensor) result.get(outputName).get();
-     * context.setOutputOnnxTensor(outputTensor);
-     * log.info("推理结果：{}", outputTensor);
-     * return postprocess(context);
-     * }
-     */
-
     private static List<List<float[]>> postprocess(DetectContext context) {
         OnnxTensor outputTensor = context.getOutputOnnxTensor();
         // 1. 获取模型输出形状（shape={nc,9,34000} → 三维数组）
@@ -127,6 +110,7 @@ public class DetectorServiceA {
 
         // 2. 获取一维 float 数组（碾平的向量）
         FloatBuffer floatBuffer = outputTensor.getFloatBuffer();
+        if(!outputTensor.isClosed()) outputTensor.close();// 防止内存泄漏
         float[] allFlatArray = new float[floatBuffer.remaining()]; // 创建对应长度的数组
         floatBuffer.get(allFlatArray); // FloatBuffer → float[]
 
@@ -187,19 +171,6 @@ public class DetectorServiceA {
         for (List<float[]> filteredBoxes : filteredImages) {
             List<float[]> nmsResults = nms(filteredBoxes, context, 0.5f);
             result.add(nmsResults);
-            // log.info("srcMat是null吗？,{}", context.getOriginMat()==null);
-            /*
-             * for (float[] box : nmsResults) {
-             * opencv_imgproc.rectangle(
-             * context.getOriginMats().get(count),
-             * new Rect((int) box[0], (int) box[1], (int) (box[2] - box[0]), (int) (box[3] -
-             * box[1])),
-             * Scalar.BLUE);
-             * }
-             * opencv_imgcodecs.imwrite("result" + count + ".png",
-             * context.getOriginMats().get(count));
-             * count++;
-             */
         }
 
         return result;// 返回：nms后的结果
@@ -225,10 +196,12 @@ public class DetectorServiceA {
             // 归一化：yolo对RGB三个通道每个通道要的都是[0,1]的值
             Mat normalizedMat = new Mat();
             rgbMat.convertTo(normalizedMat, opencv_core.CV_32F, 1.0 / 255, 0);
+            rgbMat.release();
 
             // 维度调整：HWC -> CHW（正确版本）
             MatVector chwMats = new MatVector(3); // 用 MatVector 替代 Mat[]
             opencv_core.split(normalizedMat, chwMats); // 拆分到 MatVector
+            normalizedMat.release();
             // 遍历通道（通过 get() 方法获取单个 Mat）
             int index = 0;
             for (int c = 0; c < 3; c++) {
@@ -240,6 +213,7 @@ public class DetectorServiceA {
                 index += channelData.length;
                 channelMat.release(); // 释放单个通道 Mat
             }
+            chwMats.close();
         }
         context.setInputTensor(inputTensor);
         return context;
@@ -302,7 +276,6 @@ public class DetectorServiceA {
         int imgHeight = context.getImgShape()[1]; // 原始图像高度
         int modelWidth = context.getInputShape()[0]; // 模型输入宽度
         int modelHeight = context.getInputShape()[1]; // 模型输入高度
-        int[] offset = context.getOffset(); // 填充偏移量 [x_offset, y_offset]
 
         // 计算缩放比例 (考虑letterbox填充的情况)
         float scale = Math.min((float) modelWidth / imgWidth, (float) modelHeight / imgHeight);

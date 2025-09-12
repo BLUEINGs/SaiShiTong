@@ -16,6 +16,7 @@ public class Basketball {
     private String name;
     private String rgb;
     private String rtmp;
+    private String results;
     private ZonedDateTime scoringTime;
     private ZonedDateTime startTime;
     private ZonedDateTime endTime;
@@ -23,6 +24,10 @@ public class Basketball {
     private Integer type;
     private Integer state;
     List<Basketball> list;
+
+    public void setColorStr(String str){
+        this.rgb=str;
+    }
 
     @Override
     public String toString() {

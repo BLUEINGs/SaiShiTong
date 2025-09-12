@@ -21,6 +21,7 @@ public class JavaCvFramePusher_back implements FramePusher {
     private final int height;      // 视频高度（需与帧数据匹配）
     private final int frameRate;   // 帧率（默认30fps）
     private final int bitRate;     // 视频码率（默认2000kbps）
+    private final boolean isLocalFile;  // 新增：标记是否为本地文件录制
 
     private FFmpegFrameRecorder recorder;  // JavaCV推流器核心对象
     private final BlockingQueue<Frame> frameQueue;  // 帧缓存队列（线程安全）
@@ -30,7 +31,7 @@ public class JavaCvFramePusher_back implements FramePusher {
 
     // 构造函数：初始化推流器参数
     public JavaCvFramePusher_back(String pushUrl, int width, int height) {
-        this(pushUrl, width, height, 30, 2000 * 1000);  // 默认30fps，2000kbps
+        this(pushUrl, width, height, 20, 2000 * 1000);
     }
 
     public JavaCvFramePusher_back(String pushUrl, int width, int height, int frameRate, int bitRate) {
@@ -39,12 +40,19 @@ public class JavaCvFramePusher_back implements FramePusher {
         this.height = height;
         this.frameRate = frameRate;
         this.bitRate = bitRate;
-        this.frameQueue = new LinkedBlockingQueue<>(1024);  // 队列容量可调整（如4096）
+        this.frameQueue = new LinkedBlockingQueue<>(1024);
+        // 判断是否为本地文件（支持 "file://" 前缀或直接路径如 "D:/test.mp4"）
+        this.isLocalFile = (pushUrl.startsWith("file://") ||
+                (pushUrl.contains("/") || pushUrl.contains("\\")) &&
+                        !pushUrl.startsWith("rtmp://") &&  // 排除RTMP协议
+                        !pushUrl.startsWith("rtsp://") &&  // 排除RTSP协议
+                        !pushUrl.startsWith("http://"));   // 排除HTTP协议（按需添加其他网络协议）
     }
 
     /**
      * 启动推流器（内部调用，初始化FFmpegRecorder并启动线程）
      */
+    // 关键修改：初始化FFmpegFrameRecorder时根据类型设置参数
     public void start() {
         if (isRunning.get()) {
             log.warn("推流器已运行：{}", pushUrl);
@@ -52,30 +60,57 @@ public class JavaCvFramePusher_back implements FramePusher {
         }
 
         try {
-            // 1. 初始化FFmpegFrameRecorder
+            // 1. 创建FFmpegFrameRecorder（本地文件/RTMP推流共用）
             recorder = new FFmpegFrameRecorder(pushUrl, width, height);
             recorder.setVideoCodec(avcodec.AV_CODEC_ID_H264);  // 视频编码：H.264
-            recorder.setFormat("flv");  // 输出格式：FLV（RTMP标准格式）
-            recorder.setFrameRate(frameRate);  // 帧率
-            recorder.setVideoBitrate(bitRate);  // 码率
-            recorder.setPixelFormat(0);  // 像素格式：默认（与输入帧匹配）
-            recorder.setVideoOption("preset", "ultrafast");  // 编码速度（直播场景：ultrafast/veryfast）
-            recorder.setVideoOption("tune", "zerolatency");  // 零延迟（直播必备）
-            recorder.setAudioChannels(0);  // 无音频（如有音频需设置通道数、采样率等）
+            recorder.setFrameRate(frameRate);
+            recorder.setVideoBitrate(bitRate);
+            recorder.setPixelFormat(0);  // 像素格式（与输入Frame匹配）
 
-            // 2. 打开推流器（建立RTMP连接）
+            // 2. 区分本地文件和RTMP推流的参数配置
+            if (isLocalFile) {
+                // ===== 本地文件特有配置 =====
+                recorder.setFormat(getFormatByExtension(pushUrl));  // 根据文件后缀自动识别格式（如mp4/flv）
+                recorder.setVideoOption("preset", "medium");  // 文件录制：平衡速度与画质（直播用ultrafast，文件用medium）
+                recorder.setVideoOption("crf", "23");  // CRF码率控制（0-51，越小画质越好，23为默认）
+                recorder.setAudioChannels(2);  // 示例：添加音频（如有音频帧需设置，无音频可删除）
+                recorder.setSampleRate(44100);  // 音频采样率（如44100Hz）
+                recorder.setAudioCodec(avcodec.AV_CODEC_ID_AAC);  // 音频编码：AAC
+            } else {
+                // ===== RTMP推流特有配置（保留原逻辑）=====
+                recorder.setFormat("flv");
+                recorder.setVideoOption("preset", "ultrafast");
+                recorder.setVideoOption("tune", "zerolatency");
+                recorder.setAudioChannels(0);  // 无音频
+            }
+
+            // 3. 启动录制/推流
             recorder.start();
-            log.info("FFmpeg推流器启动成功：{}（分辨率：{}x{}，帧率：{}fps）", pushUrl, width, height, frameRate);
+            log.info("{}成功：{}（分辨率：{}x{}，格式：{}）",
+                    isLocalFile ? "文件录制启动" : "RTMP推流启动",
+                    pushUrl, width, height, recorder.getFormat());
 
-            // 3. 启动推流线程（独立线程消费队列中的帧）
+            // 4. 启动推流线程（复用原逻辑，无需修改）
             isRunning.set(true);
             pushThread = new Thread(this::pushLoop, "FramePusher-" + pushUrl.hashCode());
             pushThread.start();
 
         } catch (Exception e) {
-            log.error("启动推流器失败：{}", pushUrl, e);
-            stop();  // 启动失败时清理资源
-            throw new RuntimeException("推流器初始化失败", e);
+            log.error("启动{}失败：{}", isLocalFile ? "文件录制" : "推流", pushUrl, e);
+            stop();
+            throw new RuntimeException(e);
+        }
+    }
+
+    // 辅助方法：根据文件路径后缀获取FFmpeg格式（如mp4/flv/avi）
+    private String getFormatByExtension(String filePath) {
+        String extension = filePath.substring(filePath.lastIndexOf('.')+1);
+        switch (extension) {
+            case "mp4": return "mp4";
+            case "flv": return "flv";
+            case "avi": return "avi";
+            case "mkv": return "matroska";
+            default: return "mp4";  // 默认MP4格式
         }
     }
 
@@ -193,6 +228,7 @@ public class JavaCvFramePusher_back implements FramePusher {
         frameQueue.clear();
         log.info("推流器已完全停止：{}", pushUrl);
     }
+
 
     @Override
     public boolean isRunning() {

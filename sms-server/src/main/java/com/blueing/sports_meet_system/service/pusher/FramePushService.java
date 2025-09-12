@@ -66,7 +66,7 @@ public class FramePushService {
             log.error("推流器不存在或已停止：{}，无法推送帧", pushUrl);
             return frames;  // 返回全部未推送的帧
         }
-
+        log.info("推送成功");
         try {
             return pusher.pushFrames(frames);
         } catch (Exception e) {
