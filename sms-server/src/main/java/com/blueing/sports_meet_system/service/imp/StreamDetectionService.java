@@ -108,8 +108,8 @@ public class StreamDetectionService {
             Frame frame;
             Frame lastIFrame = null;
             boolean flag = true;
-            try {
-                while (flag) {
+            while (flag) {
+                try {
                     if (lastIFrame != null && lastIFrame.keyFrame) {
                         log.info("I帧起手");
                         pusher.pushFrames(bufferedFrames);
@@ -135,17 +135,18 @@ public class StreamDetectionService {
                     frames.add(frame.clone());
                     if (frames.size() >= 30) {
                         Object[] results = ballTrackerService.processFrameBatch(frames, spId, teamColors);
-                        bufferedFrames.addAll((List<Frame>) results[0]);
-                        logsStreamServer.sendToAllClient(spId, (List<GameEvent>) results[1]);
-                        frames.clear();
+                        if (results != null) {
+                            bufferedFrames.addAll((List<Frame>) results[0]);
+                            logsStreamServer.sendToAllClient(spId, (List<GameEvent>) results[1]);
+                            frames.clear();
+                        }
                     }
+                } catch (FFmpegFrameGrabber.Exception e) {
+                    log.info("播放过程中发生错误: {}", e.getMessage());
+                } catch (Exception e) {
+                    log.info("播放过程中发生了未知错误: {}", e.getMessage());
+                    e.printStackTrace();
                 }
-
-            } catch (FFmpegFrameGrabber.Exception e) {
-                log.info("播放过程中发生错误: {}", e.getMessage());
-            } catch (Exception e) {
-                log.info("播放过程中发生了未知错误: {}", e.getMessage());
-                e.printStackTrace();
             }
             /* finally {
                 // 6. 清理资源

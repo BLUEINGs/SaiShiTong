@@ -90,6 +90,9 @@ public class ScoreUpdateServer {
         }
         try {
             List<Session> sessionList = sessions.get(spId);
+            if(sessionList==null){
+                return;
+            }
             for (Session session : sessionList) {
                 List<Basketball> records = basketballGameMapper.queryScoreRecords(spId);
                 session.getBasicRemote().sendText(records.toString());

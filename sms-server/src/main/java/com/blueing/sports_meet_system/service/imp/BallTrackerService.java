@@ -38,7 +38,7 @@ public class BallTrackerService {
         this.toMat = new OpenCVFrameConverter.ToMat(); // 该方法底池是一个对象池，对象池有三个Mat对象，转换结果随机覆盖这三个，返回引用只可能是这三个
     }
 
-    private static final float IOU_THRESHOLD = 0.6f; // IoU阈值
+    private static final float IOU_THRESHOLD = 0.7f; // IoU阈值
 
     private float calculateIoU(float[] box1, float[] box2) {
         // 计算两个框的交集区域
@@ -79,7 +79,7 @@ public class BallTrackerService {
 
         // 只取上半身部分
         int upperHeight = (y2 - y1) / 2;
-        Rect roi = new Rect(x1, y1, x2 - x1, upperHeight);
+        Rect roi = new Rect(x1, (int) (y1+upperHeight*0.1), x2 - x1, upperHeight);
 
         // 确保ROI在图像范围内
         if (roi.x() < 0 || roi.y() < 0 ||
@@ -156,8 +156,8 @@ public class BallTrackerService {
             Integer teId=null;
             if (ballBox != null) {
                 // 1. 检查是否进球
-                isScored = madeShot;
-                if (!isScored && !rimBoxes.isEmpty()) {
+                // isScored = madeShot;
+                if (madeShot&&!rimBoxes.isEmpty()) {
                     for (float[] rimBox : rimBoxes) {
                         float iou = calculateIoU(ballBox, rimBox);
                         if (iou >= IOU_THRESHOLD || isContained(ballBox, rimBox)) {

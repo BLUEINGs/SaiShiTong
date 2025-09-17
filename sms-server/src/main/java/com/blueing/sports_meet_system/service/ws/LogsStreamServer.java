@@ -93,7 +93,7 @@ public class LogsStreamServer {
             return;
         }
         for (Session session : sessionList) {
-            if(logs.isEmpty()){
+            if(logs.isEmpty()||session==null){
                 return;
             }
             try {

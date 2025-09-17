@@ -2,11 +2,16 @@ package com.blueing.sports_meet_system.service.pusher;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.bytedeco.javacv.*;
 import org.bytedeco.ffmpeg.global.avcodec;
+import org.bytedeco.javacv.FFmpegFrameRecorder;
+import org.bytedeco.javacv.FFmpegLogCallback;
+import org.bytedeco.javacv.Frame;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
@@ -28,6 +33,7 @@ public class JavaCvFramePusher implements FramePusher {
     // 构造函数：初始化推流器参数
     public JavaCvFramePusher(String pushUrl, int width, int height) {
         this(pushUrl, width, height, 20, 2000 * 1000);
+        FFmpegLogCallback.set();
     }
 
     public JavaCvFramePusher(String pushUrl, int width, int height, int frameRate, int bitRate) {
@@ -115,6 +121,20 @@ public class JavaCvFramePusher implements FramePusher {
      */
     private void pushLoop() {
         while (isRunning.get()) {
+            int maxRetries=3;
+            for (int i = 0; i < maxRetries; i++) {
+                try{
+                    Frame frame = frameQueue.poll(100, TimeUnit.MILLISECONDS);  // 超时等待新帧
+                    if (frame != null) {
+                        // 写入帧数据（阻塞操作，直到帧被编码发送）
+                        recorder.record(frame);
+                        // 释放Frame资源（可选，根据业务层是否复用Frame决定）
+                        // Frame.release(frame);
+                    }
+                }catch(Exception e){
+
+                }
+            }
             try {
                 Frame frame = frameQueue.poll(100, TimeUnit.MILLISECONDS);  // 超时等待新帧
                 if (frame != null) {
@@ -128,7 +148,7 @@ public class JavaCvFramePusher implements FramePusher {
                 Thread.currentThread().interrupt();
                 break;
             } catch (Exception e) {
-                log.error("推流失败（将尝试重启）：{}", pushUrl, e);
+                log.error("推流失败（将计划直接跳过该帧）：{}", pushUrl, e);
                 // 发生错误时尝试重启推流器（可选逻辑，根据稳定性需求）
                 restartRecorder();
             }

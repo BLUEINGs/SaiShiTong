@@ -29,4 +29,4 @@ logging:
   level:
     org.springframework.jdbc.support.JdbcTransactionManager: debug;
 server:
-  port: 8081
+  port: 8082

@@ -201,7 +201,7 @@ public class FrameLogger {
                     } else if ("shooting".equals(previousEvent.getEventType())) {
                         lastShooting = previousEvent;
                         break;
-                    }else if("ball_in".equals(previousEvent.getEventType()) && count<3){
+                    }else if("ball_in".equals(previousEvent.getEventType()) && count<5){
                         //如果前三个事件内直接是进球，球不可能自己进，我们认为重复或者球没进
                         return null;
                     }

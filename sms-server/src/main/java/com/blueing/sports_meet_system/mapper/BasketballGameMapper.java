@@ -26,7 +26,7 @@ public interface BasketballGameMapper {
 
     void addBasDuration(Integer spId,ZonedDateTime startTime, ZonedDateTime endTime,Integer type);
 
-    void addContingent(Integer spId,String name,String rgb);
+    void addContingent(Integer spId,String name,String rgb,Integer score);
 
     List<Basketball> queryScoreRecords(Integer spId);
 
