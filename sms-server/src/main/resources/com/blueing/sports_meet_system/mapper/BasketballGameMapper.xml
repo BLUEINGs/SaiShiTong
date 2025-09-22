@@ -7,7 +7,7 @@
         insert into score_records(te_id,scoring_time,score) value(#{teId},#{scoringTime},#{score})
     </insert>
     <insert id="addBasketballs" useGeneratedKeys="true" keyProperty="sp_id">
-        insert into basketballs(start_time, end_time) values (#{startTime},#{endTime});
+        insert into basketballs(name,start_time, end_time,rtmp,state) values (#{name},#{startTime},#{endTime},#{rtmp},#{state});
     </insert>
     <insert id="addBasDuration">
         insert into bas_duration(sp_id, start_time, end_time, type) values (#{spId},#{startTime},#{endTime},#{type})

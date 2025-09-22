@@ -22,7 +22,7 @@ public interface BasketballGameMapper {
 
     void addScoringSituation (Integer teId,ZonedDateTime scoringTime, Integer score );
 
-    Integer addBasketballs(ZonedDateTime startTime, ZonedDateTime endTime);
+    Integer addBasketballs(String name,ZonedDateTime startTime, ZonedDateTime endTime,String rtmp,Integer state);
 
     void addBasDuration(Integer spId,ZonedDateTime startTime, ZonedDateTime endTime,Integer type);
 

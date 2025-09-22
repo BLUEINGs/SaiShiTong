@@ -26,9 +26,10 @@ public class BasketballGameController {
                                   ZonedDateTime startTime1,ZonedDateTime endTime1,
                                   ZonedDateTime startTime2,ZonedDateTime endTime2,
                                   ZonedDateTime startTime3,ZonedDateTime endTime3,
-                                  ZonedDateTime startTime4,ZonedDateTime endTime4) {
+                                  ZonedDateTime startTime4,ZonedDateTime endTime4,
+                                            String name,String rtmp,Integer state) {
 
-        basketballGameServiceA.addBasketballGame(nameA,rgbA,nameB,rgbB, startTime1, endTime1, startTime2, endTime2, startTime3, endTime3, startTime4, endTime4);
+        basketballGameServiceA.addBasketballGame(nameA,rgbA,nameB,rgbB, startTime1, endTime1, startTime2, endTime2, startTime3, endTime3, startTime4, endTime4,name,rtmp,state);
         return Result.success(null);
     }
 

@@ -13,7 +13,8 @@ public interface BasketballGameService {
                            ZonedDateTime startTime1, ZonedDateTime endTime1,
                            ZonedDateTime startTime2, ZonedDateTime endTime2,
                            ZonedDateTime startTime3, ZonedDateTime endTime3,
-                           ZonedDateTime startTime4, ZonedDateTime endTime4);
+                           ZonedDateTime startTime4, ZonedDateTime endTime4,
+                           String name,String rtmp,Integer state);
 
     List<Basketball> queryTeamScoringDetailsRecord(Integer spId);
 

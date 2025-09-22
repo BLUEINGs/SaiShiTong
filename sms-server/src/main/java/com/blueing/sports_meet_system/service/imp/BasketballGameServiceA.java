@@ -45,9 +45,10 @@ public class BasketballGameServiceA implements BasketballGameService {
                                   ZonedDateTime startTime1, ZonedDateTime endTime1,
                                   ZonedDateTime startTime2, ZonedDateTime endTime2,
                                   ZonedDateTime startTime3, ZonedDateTime endTime3,
-                                  ZonedDateTime startTime4, ZonedDateTime endTime4) {
+                                  ZonedDateTime startTime4, ZonedDateTime endTime4,
+                                  String name,String rtmp,Integer state) {
 
-        Integer spId = basketballGameMapper.addBasketballs(startTime1, endTime4);
+        Integer spId = basketballGameMapper.addBasketballs(name,startTime1, endTime4,rtmp,state);
         basketballGameMapper.addBasDuration(spId, startTime1, endTime1, 1);
         basketballGameMapper.addBasDuration(spId, startTime2, endTime2, 2);
         basketballGameMapper.addBasDuration(spId, startTime3, endTime3, 3);
