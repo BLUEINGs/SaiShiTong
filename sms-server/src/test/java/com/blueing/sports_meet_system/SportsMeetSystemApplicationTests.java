@@ -26,23 +26,23 @@ import static org.bytedeco.javacv.Java2DFrameUtils.toMat;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class SportsMeetSystemApplicationTests {
 
-    @Autowired
-    private DetectorServiceA detectorServiceA;
+    // @Autowired
+    // private DetectorServiceA detectorServiceA;
 
-    @Autowired
-    private BallTrackerService ballTrackerService;
+    // @Autowired
+    // private BallTrackerService ballTrackerService;
 
-    @Autowired
-    private RtmpStreamer rtmpStreamer;
-    @Autowired
-    private StreamDetectionService streamDetectionService;
+    // @Autowired
+    // private RtmpStreamer rtmpStreamer;
+    // @Autowired
+    // private StreamDetectionService streamDetectionService;
 
-    @Test
+    /* @Test
     public void testPullAndPush(){
         String path = System.getenv("PATH");
         log.info("Java Process PATH:\n{}", path);
         // rtmpStreamService.pullAndPush("rtmp://localhost/live/livestream",3);
-    }
+    } */
 
     // @Test
     /* void testBallTracking() throws Exception {
@@ -88,75 +88,75 @@ class SportsMeetSystemApplicationTests {
         }
     } */
 
-    private void saveProcessedFrames(List<Mat> mats) throws Exception {
-        for (int i = 0; i < mats.size(); i++) {
-            Mat mat = mats.get(i);
-            Frame frame = toFrame(mat).clone();
-
-            rtmpStreamer.initForFramePushing("rtmp://localhost:1935/live/basketball",640,360,24,600000);
-            rtmpStreamer.pushFrame(frame);
-
-            mat.release();
-            frame.close();
-            // log.info("mat地址:{}", mat.address());
-            // opencv_imgcodecs.imwrite("processed_" + i + ".png", mat);
-        }
-    }
+    // private void saveProcessedFrames(List<Mat> mats) throws Exception {
+    //     for (int i = 0; i < mats.size(); i++) {
+    //         Mat mat = mats.get(i);
+    //         Frame frame = toFrame(mat).clone();
+    //
+    //         rtmpStreamer.initForFramePushing("rtmp://localhost:1935/live/basketball",640,360,24,600000);
+    //         rtmpStreamer.pushFrame(frame);
+    //
+    //         mat.release();
+    //         frame.close();
+    //         // log.info("mat地址:{}", mat.address());
+    //         // opencv_imgcodecs.imwrite("processed_" + i + ".png", mat);
+    //     }
+    // }
 
     // @Test
-    void onnxLoader() throws OrtException, FrameGrabber.Exception {
-        try (FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(
-                "F:\\AiProject\\datasets\\basketball_raw\\video.mkv")) {
-            grabber.start();
-
-            // 尝试抓取多帧，有些视频第一帧可能是空的
-            List<Frame> frames = new ArrayList<>();
-            try (OpenCVFrameConverter.ToMat converter = new OpenCVFrameConverter.ToMat()) {
-                for (int i = 0; i < 30; i++) {
-                    Frame frame;
-                    int attempts = 0;
-                    do {
-                        frame = grabber.grab();
-                        attempts++;
-                    } while ((frame == null || frame.image == null) && attempts < 10);
-
-                    if (frame == null || frame.image == null) {
-                        throw new RuntimeException("无法获取有效视频帧");
-                    }
-
-                    // 检查帧类型
-                    if (frame.image != null) {
-                        log.info("帧类型: {}, 通道: {}, 宽度: {}, 高度: {},时间戳：{}",
-                                frame.image.getClass().getSimpleName(),
-                                frame.imageChannels,
-                                frame.imageWidth,
-                                frame.imageHeight,
-                                frame.timestamp);
-
-                        // 转换为Mat并立即克隆
-                        frames.add(frame.clone());
-                        Mat mat = converter.convert(frame);
-                        Mat clonedMat = mat.clone();
-                        opencv_imgcodecs.imwrite(i + ".png", clonedMat);
-
-                        // 转回Frame并存储
-                        // Frame clonedFrame = converter.convert(clonedMat);
-                        // frames.add(clonedFrame);
-
-                        // 释放资源
-                        mat.release();
-                        clonedMat.release();
-                    }
-                }
-            }
-
-            List<List<float[]>> detects = detectorServiceA.detect(frames);
-            for (List<float[]> detect : detects) {
-                for (float[] floats : detect) {
-                    log.info("检测结果：{}", floats);
-                }
-            }
-        }
-    }
+    // void onnxLoader() throws OrtException, FrameGrabber.Exception {
+    //     try (FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(
+    //             "F:\\AiProject\\datasets\\basketball_raw\\video.mkv")) {
+    //         grabber.start();
+    //
+    //         // 尝试抓取多帧，有些视频第一帧可能是空的
+    //         List<Frame> frames = new ArrayList<>();
+    //         try (OpenCVFrameConverter.ToMat converter = new OpenCVFrameConverter.ToMat()) {
+    //             for (int i = 0; i < 30; i++) {
+    //                 Frame frame;
+    //                 int attempts = 0;
+    //                 do {
+    //                     frame = grabber.grab();
+    //                     attempts++;
+    //                 } while ((frame == null || frame.image == null) && attempts < 10);
+    //
+    //                 if (frame == null || frame.image == null) {
+    //                     throw new RuntimeException("无法获取有效视频帧");
+    //                 }
+    //
+    //                 // 检查帧类型
+    //                 if (frame.image != null) {
+    //                     log.info("帧类型: {}, 通道: {}, 宽度: {}, 高度: {},时间戳：{}",
+    //                             frame.image.getClass().getSimpleName(),
+    //                             frame.imageChannels,
+    //                             frame.imageWidth,
+    //                             frame.imageHeight,
+    //                             frame.timestamp);
+    //
+    //                     // 转换为Mat并立即克隆
+    //                     frames.add(frame.clone());
+    //                     Mat mat = converter.convert(frame);
+    //                     Mat clonedMat = mat.clone();
+    //                     opencv_imgcodecs.imwrite(i + ".png", clonedMat);
+    //
+    //                     // 转回Frame并存储
+    //                     // Frame clonedFrame = converter.convert(clonedMat);
+    //                     // frames.add(clonedFrame);
+    //
+    //                     // 释放资源
+    //                     mat.release();
+    //                     clonedMat.release();
+    //                 }
+    //             }
+    //         }
+    //
+    //         List<List<float[]>> detects = detectorServiceA.detect(frames);
+    //         for (List<float[]> detect : detects) {
+    //             for (float[] floats : detect) {
+    //                 log.info("检测结果：{}", floats);
+    //             }
+    //         }
+    //     }
+    // }
 
 }

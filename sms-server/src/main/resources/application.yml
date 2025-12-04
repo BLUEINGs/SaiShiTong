@@ -24,9 +24,13 @@ oss:
     #???????
 #    url: F:\\运动会编排系统\\oss(moni)\\schoolImg\\
     url: http://8.140.62.7/img/head_portrait/
-#
+
+  asset:
+    model:
+      basketballYoloModel: D:\\Users\\王士豪\\OneDrive\\文档\\帧界篮球\\best.onnx
+
 logging:
   level:
     org.springframework.jdbc.support.JdbcTransactionManager: debug;
 server:
-  port: 8082
+  port: 8081

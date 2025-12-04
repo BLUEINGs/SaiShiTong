@@ -11,9 +11,9 @@ import java.util.List;
 @Mapper
 public interface BasketballGameMapper {
 
-    Basketball querySpIdScores(Integer teId);
+    BasketballEvent querySpIdScores(Integer teId);
 
-    List<Basketball> queryTeamScores(Integer spId);
+    List<BasketballEvent> queryTeamScores(Integer spId);
 
     void modifyTeamScores(Integer teId,Integer score);
 
@@ -22,32 +22,32 @@ public interface BasketballGameMapper {
 
     void addScoringSituation (Integer teId,ZonedDateTime scoringTime, Integer score );
 
-    Integer addBasketballs(String name,ZonedDateTime startTime, ZonedDateTime endTime,String rtmp,Integer state);
+    Integer addBasketballs(BasketballEvent basketballEvent);
 
     void addBasDuration(Integer spId,ZonedDateTime startTime, ZonedDateTime endTime,Integer type);
 
     void addContingent(Integer spId,String name,String rgb,Integer score);
 
-    List<Basketball> queryScoreRecords(Integer spId);
+    List<BasketballEvent> queryScoreRecords(Integer spId);
 
-    List<Basketball> queryScoreRecordsBySpId(Integer spId);
+    List<BasketballEvent> queryScoreRecordsBySpId(Integer spId);
 
-    List<Basketball> queryBasketballEvent();
+    List<BasketballEvent> queryBasketballEvent();
 
     List<TeamColor> queryAiContingent(Integer spId);
 
-    List<Basketball> querySchedule(Integer spId);
+    List<BasketballEvent> querySchedule(Integer spId);
 
-    Basketball queryBasketball(Integer spId);
+    BasketballEvent queryBasketball(Integer spId);
 
-    List<Basketball> queryWillStartBasketball(ZonedDateTime dateTime);
+    List<BasketballEvent> queryWillStartBasketball(ZonedDateTime dateTime);
 
     @Update("update basketballs set results=#{url} where sp_id=#{spId}")
     void setResultLink(String url,Integer spId);
 
     @Select("select sp_id, name, start_time, end_time, state, rtmp from basketballs where state=3")
-    List<Basketball> queryDoneStartBasketball(ZonedDateTime now);
+    List<BasketballEvent> queryDoneStartBasketball(ZonedDateTime now);
 
     @Select("select sp_id, name, start_time, end_time, state, rtmp from basketballs where state in (0,3)")
-    List<Basketball> queryNeedStartBasketball(ZonedDateTime now);
+    List<BasketballEvent> queryNeedStartBasketball(ZonedDateTime now);
 }
