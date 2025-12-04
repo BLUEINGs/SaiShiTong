@@ -30,7 +30,7 @@ public class AutoRank {
     @Autowired
     private SportMeetingsMapper sportMeetingsMapper;
 
-    @Scheduled(fixedDelay = 60 * 1000 * 5)
+    // @Scheduled(fixedDelay = 60 * 1000 * 5)
     public synchronized void timer() {
 
         log.info("更新运动会计数数据");

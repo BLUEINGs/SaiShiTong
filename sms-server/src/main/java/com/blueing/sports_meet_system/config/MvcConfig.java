@@ -29,7 +29,11 @@ public class MvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(interceptor).addPathPatterns("/**").excludePathPatterns("/getSportMeetings","/getSportMeeting/**","/login","/register");
+        registry.addInterceptor(interceptor).addPathPatterns("/**")
+                .excludePathPatterns("/getSportMeetings",
+                        "/getSportMeeting/**",
+                        "/login","/register",
+                        "/scoringRecords/**");
         registry.addInterceptor(departmentInterceptor).addPathPatterns("/addSchool")
                 .addPathPatterns("/modifySchool")
                 .addPathPatterns("/deleteSchool")
