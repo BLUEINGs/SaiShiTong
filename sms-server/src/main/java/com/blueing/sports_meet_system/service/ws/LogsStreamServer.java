@@ -2,10 +2,8 @@ package com.blueing.sports_meet_system.service.ws;
 
 import com.blueing.sports_meet_system.entity.GameEvent;
 import com.blueing.sports_meet_system.mapper.BasketballGameMapper;
-import com.blueing.sports_meet_system.pojo.Basketball;
 import com.blueing.sports_meet_system.utils.SpringContextHolder;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.PostConstruct;
 import jakarta.websocket.OnClose;
 import jakarta.websocket.OnMessage;
 import jakarta.websocket.OnOpen;

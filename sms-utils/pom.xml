@@ -28,4 +28,17 @@
             <version>0.9.1</version>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <!-- 防止从父 POM 继承的 spring-boot-maven-plugin 尝试打包可执行 JAR -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip> <!-- 关键：跳过 repackage -->
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

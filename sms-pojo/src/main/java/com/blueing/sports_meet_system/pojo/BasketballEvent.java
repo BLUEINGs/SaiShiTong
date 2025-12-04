@@ -1,6 +1,7 @@
 package com.blueing.sports_meet_system.pojo;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -8,9 +9,10 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Basketball {
+public class BasketballEvent {
     private Integer spId;
     private Integer teId;
     private String name;
@@ -23,7 +25,7 @@ public class Basketball {
     private Integer score;
     private Integer type;
     private Integer state;
-    List<Basketball> list;
+    List<BasketballEvent> list;
 
     public void setColorStr(String str){
         this.rgb=str;

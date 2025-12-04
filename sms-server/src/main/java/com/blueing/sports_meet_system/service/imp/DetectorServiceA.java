@@ -6,17 +6,15 @@ import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.bytedeco.javacv.OpenCVFrameConverter;
 import org.bytedeco.opencv.global.opencv_core;
-import org.bytedeco.opencv.global.opencv_imgcodecs;
 import org.bytedeco.opencv.global.opencv_imgproc;
 import org.bytedeco.opencv.opencv_core.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.bytedeco.javacv.Frame;
 
 import java.nio.FloatBuffer;
 import java.util.*;
 import java.util.Arrays;
-
-import static org.bytedeco.javacv.Java2DFrameUtils.toMat;
 
 @Slf4j
 @Service
@@ -28,6 +26,9 @@ public class DetectorServiceA {
 
     private String inputName;
     private String outputName;
+
+    @Value("${oss.asset.model.basketballYoloModel}")
+    public String modelPath;
 
     public DetectorServiceA() {
     }
@@ -58,7 +59,6 @@ public class DetectorServiceA {
          * 创建会话
          * 会话环境：通过模型和会话设置创建会话的工具
          */
-        String modelPath = "D:\\Users\\王士豪\\Downloads\\best.onnx";
         session = env.createSession(modelPath, sessionOptions);
         NodeInfo inputInfo = session.getInputInfo().values().iterator().next();
         inputName = inputInfo.getName();
@@ -68,6 +68,11 @@ public class DetectorServiceA {
         log.info("ONNX模型加载成功！模型信息：{}", inputInfo);
     }
 
+    /**
+     * 唯一对外封装方法，给入帧序列，将为其执行推理
+     * @param frames
+     * @return bbox
+     */
     public List<List<float[]>> detect(List<Frame> frames) {
         float[] inputTensors = new float[frames.size() * 3 * 640 * 640];
         DetectContext context = DetectContext.builder()
@@ -191,7 +196,7 @@ public class DetectorServiceA {
             srcMat.release();
             Mat rgbMat = new Mat();
             opencv_imgproc.cvtColor(letterboxed, rgbMat, opencv_imgproc.COLOR_BGR2RGB);
-            opencv_imgcodecs.imwrite("letterboxed_debug.jpg", letterboxed);
+            // opencv_imgcodecs.imwrite("letterboxed_debug.jpg", letterboxed);
             letterboxed.release();
             // 归一化：yolo对RGB三个通道每个通道要的都是[0,1]的值
             Mat normalizedMat = new Mat();
