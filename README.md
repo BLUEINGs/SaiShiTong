@@ -3,7 +3,7 @@
 ## 服务器环境
 1. [服务器域名](http://blueing.fun)
 2. [yapi接口服务](http://blueing.fun:3000)<br>
-3. [MySQL数据库](http://blueing.fun:3306/sprots_meet)(密码：200600)
+3. [MySQL数据库](http://blueing.fun:3306/sprots_meet)
 4. [智赛云0.0.1公网部署版前端地址](http://blueing.fun:90)
 5. [智赛云0.0.1公网部署版后端地址](http://blueing.fun:8080)
 
