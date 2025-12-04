@@ -35,7 +35,7 @@ public class AutoArrangeDuration {
     private SportMapper sportMapper;
 
     @Transactional
-    @Scheduled(fixedDelay = 60 * 1000 * 5)
+    // @Scheduled(fixedDelay = 60 * 1000 * 5)
     public synchronized void arrangeDuration() {
 
         log.info("更新可评分比赛的状态");
@@ -167,6 +167,8 @@ public class AutoArrangeDuration {
                     }
                 }
                 sport.setGameStartTime(currentTime);
+                sport.setCheckBeginTime(currentTime.minusMinutes(30));
+                sport.setCheckEndTime(currentTime.minusMinutes(5));
 //                assert currentTime != null;//断言能干啥？
                 sport.setGameEndTime(gameEndTime);
                 currentTime = gameEndTime;
@@ -189,7 +191,7 @@ public class AutoArrangeDuration {
         int count=0;
         for (Sport sport : trackSports) {
             count++;
-            log.info("总{}个，先便利到{}个",trackSports.size(),count);
+            log.info("总{}个，先遍历到{}个",trackSports.size(),count);
             Integer countPgp = sport.getCountPgp();
             if(countPgp==null){
                 countPgp=1;
@@ -222,6 +224,8 @@ public class AutoArrangeDuration {
             }
             sport.setGameStartTime(currentTime);
 //                assert currentTime != null;//断言能干啥？
+            sport.setCheckBeginTime(currentTime.minusMinutes(30));
+            sport.setCheckEndTime(currentTime.minusMinutes(5));
             sport.setGameEndTime(gameEndTime);
             currentTime = gameEndTime;
             log.info("当前遍历到径赛{},{}",sport.getSpId(),sport.getName());

@@ -32,7 +32,7 @@ public class AutoRisePlayer {
     private JudgeMapper judgeMapper;
 
     @Transactional
-    @Scheduled(fixedDelay = 60 * 1000 * 5)
+    // @Scheduled(fixedDelay = 60 * 1000 * 5)
     public synchronized void timer() {
         log.info("即将获取未晋级比赛");
         List<Sport> sports = sportMapper.getNoRisenSports(ZonedDateTime.now());

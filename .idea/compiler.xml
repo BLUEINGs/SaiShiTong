@@ -2,17 +2,23 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
       <profile name="Maven default annotation processors profile" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="sports_meet_system" />
+        <module name="sms-server" />
+        <module name="sms-pojo" />
+        <module name="sms-utils" />
       </profile>
     </annotationProcessing>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="sports_meet_system" options="-parameters" />
+      <module name="sms-pojo" options="-parameters" />
+      <module name="sms-server" options="-parameters" />
+      <module name="sms-utils" options="-parameters" />
+      <module name="sports_meet_system" options="" />
     </option>
   </component>
 </project>
