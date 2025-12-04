@@ -1,11 +1,9 @@
 package com.blueing.sports_meet_system.service.ws;
 
-import com.blueing.sports_meet_system.entity.GameEvent;
 import com.blueing.sports_meet_system.mapper.BasketballGameMapper;
-import com.blueing.sports_meet_system.pojo.Basketball;
+import com.blueing.sports_meet_system.pojo.BasketballEvent;
 import com.blueing.sports_meet_system.utils.SpringContextHolder;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -94,7 +92,7 @@ public class ScoreUpdateServer {
                 return;
             }
             for (Session session : sessionList) {
-                List<Basketball> records = basketballGameMapper.queryScoreRecords(spId);
+                List<BasketballEvent> records = basketballGameMapper.queryScoreRecords(spId);
                 session.getBasicRemote().sendText(records.toString());
             }
         } catch (IOException e) {

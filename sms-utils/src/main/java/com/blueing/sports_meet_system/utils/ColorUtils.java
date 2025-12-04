@@ -54,7 +54,7 @@ public class ColorUtils {
         return 1 - (distance / maxDistance);
     }
 
-    public static void main(String[] args) {
+    /* public static void main(String[] args) {
         // 测试示例
         int[] red = {255, 0, 0};
         int[] lightRed = {255, 50, 50};
@@ -65,5 +65,5 @@ public class ColorUtils {
 
         System.out.println("红-蓝 欧几里得距离: " + calculateEuclideanDistance(red, blue));
         System.out.println("红-蓝 归一化相似度: " + calculateNormalizedSimilarity(red, blue));
-    }
+    } */
 }

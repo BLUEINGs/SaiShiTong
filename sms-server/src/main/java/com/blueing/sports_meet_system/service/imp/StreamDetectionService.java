@@ -58,7 +58,7 @@ public class StreamDetectionService {
             this.spId = spId;
             this.pullUrl = pullUrl;
             this.bufferedFrames = new ArrayList<>();
-            ballTrackerService = SpringContextHolder.getBean(BallTrackerService.class);
+            ballTrackerService = new BallTrackerService(1920,1080);
             logsStreamServer = SpringContextHolder.getBean(LogsStreamServer.class);
             pushService = SpringContextHolder.getBean(FramePushService.class);
             basketballGameMapper = SpringContextHolder.getBean(BasketballGameMapper.class);
@@ -77,9 +77,11 @@ public class StreamDetectionService {
             log.info("连接成功！");
             log.info("视频格式: {}", grabber.getFormat());
             int width = grabber.getImageWidth();
+            ballTrackerService.setWidth(width);
             log.info("视频宽度: {}", width);
             int height = grabber.getImageHeight();
             log.info("视频高度: {}", height);
+            ballTrackerService.setHeight(height);
             log.info("帧率: {}", grabber.getVideoFrameRate());
 
             // 查回队伍颜色

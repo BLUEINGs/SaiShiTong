@@ -1,28 +1,31 @@
 package com.blueing.sports_meet_system.service;
 
 
-import com.blueing.sports_meet_system.pojo.Basketball;
+import com.blueing.sports_meet_system.pojo.BasketballEvent;
 import com.blueing.sports_meet_system.pojo.TeamColor;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZonedDateTime;
 import java.util.List;
 
 public interface BasketballGameService {
-    void addfraction(Integer teId,Integer fraction);
-    void addBasketballGame(String nameA, String rgbA, String nameB, String rgbB,
+    void addFraction(Integer teId, Integer fraction);
+
+    @Transactional
+    void addBasketballGame(String title, String nameA, String rgbA, String nameB, String rgbB,String rtmp,
                            ZonedDateTime startTime1, ZonedDateTime endTime1,
                            ZonedDateTime startTime2, ZonedDateTime endTime2,
                            ZonedDateTime startTime3, ZonedDateTime endTime3,
                            ZonedDateTime startTime4, ZonedDateTime endTime4,
                            String name,String rtmp,Integer state);
 
-    List<Basketball> queryTeamScoringDetailsRecord(Integer spId);
+    List<BasketballEvent> queryTeamScoringDetailsRecord(Integer spId);
 
-    List<Basketball> queryTeamScores(Integer spId);
+    List<BasketballEvent> queryTeamScores(Integer spId);
 
-    List<Basketball> queryBasketballEvent();
+    List<BasketballEvent> queryBasketballEvent();
 
     List<TeamColor> queryAiContingent(Integer spId);
 
-    Basketball querySchedule(Integer spId);
+    BasketballEvent querySchedule(Integer spId);
 }

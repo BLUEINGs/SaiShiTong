@@ -1,7 +1,7 @@
 package com.blueing.sports_meet_system.service.imp;
 
 import com.blueing.sports_meet_system.mapper.BasketballGameMapper;
-import com.blueing.sports_meet_system.pojo.Basketball;
+import com.blueing.sports_meet_system.pojo.BasketballEvent;
 import com.blueing.sports_meet_system.pojo.TeamColor;
 import com.blueing.sports_meet_system.service.BasketballGameService;
 import com.blueing.sports_meet_system.service.ws.ScoreUpdateServer;
@@ -28,47 +28,49 @@ public class BasketballGameServiceA implements BasketballGameService {
 
     @Override
     @Transactional
-    public void addfraction(Integer teId, Integer fraction) {
-        Basketball basketball = basketballGameMapper.querySpIdScores(teId);
-        Integer score = basketball.getScore();
+    public void addFraction(Integer teId, Integer fraction) {
+        BasketballEvent basketballEvent = basketballGameMapper.querySpIdScores(teId);
+        Integer score = basketballEvent.getScore();
         score = score + fraction;
-        basketball.setScore(score);
+        basketballEvent.setScore(score);
         basketballGameMapper.modifyTeamScores(teId, score);
         ZonedDateTime zonedNow = ZonedDateTime.now();
         basketballGameMapper.addScoringSituation(teId, zonedNow, fraction);
-        socketServer.sendToAllClient(basketball.getSpId());
+        socketServer.sendToAllClient(basketballEvent.getSpId());
     }
 
-    @Override
     @Transactional
-    public void addBasketballGame(String nameA, String rgbA, String nameB, String rgbB,
+    @Override
+    public void addBasketballGame(String title, String nameA, String rgbA, String nameB, String rgbB,String rtmp,
                                   ZonedDateTime startTime1, ZonedDateTime endTime1,
                                   ZonedDateTime startTime2, ZonedDateTime endTime2,
                                   ZonedDateTime startTime3, ZonedDateTime endTime3,
-                                  ZonedDateTime startTime4, ZonedDateTime endTime4,
-                                  String name,String rtmp,Integer state) {
+                                  ZonedDateTime startTime4, ZonedDateTime endTime4) {
 
-        Integer spId = basketballGameMapper.addBasketballs(name,startTime1, endTime4,rtmp,state);
+        BasketballEvent basketballEvent = BasketballEvent.builder().name(title).startTime(startTime1).endTime(endTime4).rtmp(rtmp).build();
+        basketballGameMapper.addBasketballs(basketballEvent);
+        Integer spId=basketballEvent.getSpId();
         basketballGameMapper.addBasDuration(spId, startTime1, endTime1, 1);
         basketballGameMapper.addBasDuration(spId, startTime2, endTime2, 2);
         basketballGameMapper.addBasDuration(spId, startTime3, endTime3, 3);
         basketballGameMapper.addBasDuration(spId, startTime4, endTime4, 4);
         basketballGameMapper.addContingent(spId, nameA, rgbA,0);
         basketballGameMapper.addContingent(spId, nameB, rgbB,0);
+        scheduleLaunch();
     }
 
     @Override
-    public List<Basketball> queryTeamScoringDetailsRecord(Integer spId) {
+    public List<BasketballEvent> queryTeamScoringDetailsRecord(Integer spId) {
         return basketballGameMapper.queryScoreRecords(spId);
     }
 
     @Override
-    public List<Basketball> queryTeamScores(Integer spId) {
+    public List<BasketballEvent> queryTeamScores(Integer spId) {
         return basketballGameMapper.queryTeamScores(spId);
     }
 
     @Override
-    public List<Basketball> queryBasketballEvent() {
+    public List<BasketballEvent> queryBasketballEvent() {
         return basketballGameMapper.queryBasketballEvent();
     }
 
@@ -80,30 +82,30 @@ public class BasketballGameServiceA implements BasketballGameService {
     }
 
     @Override
-    public Basketball querySchedule(Integer spId) {
-        List<Basketball> schedules = basketballGameMapper.querySchedule(spId);
-        Basketball basketball = new Basketball();
-        basketball.setSpId(spId);
-        basketball.setList(schedules);
-        return basketball;
+    public BasketballEvent querySchedule(Integer spId) {
+        List<BasketballEvent> schedules = basketballGameMapper.querySchedule(spId);
+        BasketballEvent basketballEvent = new BasketballEvent();
+        basketballEvent.setSpId(spId);
+        basketballEvent.setList(schedules);
+        return basketballEvent;
     }
 
     @Transactional
     @Scheduled(fixedDelay = 60 * 1000)
     public void scheduleLaunch(){
-        List<Basketball> basketballs = basketballGameMapper.queryNeedStartBasketball(ZonedDateTime.now());
-        for (Basketball basketball : basketballs) {
+        List<BasketballEvent> basketballEvents = basketballGameMapper.queryNeedStartBasketball(ZonedDateTime.now());
+        for (BasketballEvent basketballEvent : basketballEvents) {
             //为每一场比赛开启检测任务
-            log.info("spId:{}开始检测任务",basketball.getSpId());
-            streamDetectionService.pullAndPush(basketball.getState(), basketball.getRtmp(),basketball.getSpId());
-            switch (basketball.getState()){
-                case 0 -> basketballGameMapper.modifyBasketballStatus(basketball.getSpId(), 1);
-                case 3 -> basketballGameMapper.modifyBasketballStatus(basketball.getSpId(),4);
+            log.info("spId:{}开始检测任务", basketballEvent.getSpId());
+            streamDetectionService.pullAndPush(basketballEvent.getState(), basketballEvent.getRtmp(), basketballEvent.getSpId());
+            switch (basketballEvent.getState()){
+                case 0 -> basketballGameMapper.modifyBasketballStatus(basketballEvent.getSpId(), 1);
+                case 3 -> basketballGameMapper.modifyBasketballStatus(basketballEvent.getSpId(),4);
             }
         }
     }
 
-    public Basketball queryEventInfo(Integer spId) {
+    public BasketballEvent queryEventInfo(Integer spId) {
         return basketballGameMapper.queryBasketball(spId);
     }
 

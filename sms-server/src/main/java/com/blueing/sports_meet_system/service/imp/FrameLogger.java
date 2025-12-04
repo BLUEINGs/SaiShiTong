@@ -4,15 +4,13 @@ import com.blueing.sports_meet_system.entity.BallPosition;
 import com.blueing.sports_meet_system.entity.BasketPosition;
 import com.blueing.sports_meet_system.entity.GameEvent;
 import com.blueing.sports_meet_system.entity.PlayerAction;
-import com.blueing.sports_meet_system.mapper.BasketballGameMapper;
 import com.blueing.sports_meet_system.service.BasketballGameService;
+import com.blueing.sports_meet_system.utils.SpringContextHolder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.opencv.opencv_core.*;
 import org.bytedeco.opencv.global.opencv_core;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import jakarta.annotation.PostConstruct;
 
@@ -20,11 +18,10 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
-import java.time.ZonedDateTime;
 import java.util.*;
 
 @Slf4j
-@Component
+// @Component
 public class FrameLogger {
     private final int saveInterval = 60; // 保存间隔（秒）
     private final String saveDir = "./game_logs";
@@ -32,8 +29,8 @@ public class FrameLogger {
     private long lastSaveTime = System.currentTimeMillis();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Autowired
-    private BasketballGameService basketballGameService;
+    // @Autowired
+    private final BasketballGameService basketballGameService= SpringContextHolder.getBean(BasketballGameServiceA.class);
 
     @PostConstruct
     public void init() {
@@ -211,19 +208,19 @@ public class FrameLogger {
                 if (lastHolding!=null){
                     //情况一：只找到了上一个运球人
                     if(lastShooting==null){
-                        basketballGameService.addfraction(lastHolding.getPlayerAction().getTeId(), 2);
+                        basketballGameService.addFraction(lastHolding.getPlayerAction().getTeId(), 2);
                         //情况二：找到了上一个运球人和上一个投篮人，两人是同一队
                     } else if(lastHolding.getPlayerAction().getTeId()==lastShooting.getPlayerAction().getTeId()){
-                        basketballGameService.addfraction(lastHolding.getPlayerAction().getTeId(), 2);
+                        basketballGameService.addFraction(lastHolding.getPlayerAction().getTeId(), 2);
                         //情况三：两人是不同队
                     }else{
-                        basketballGameService.addfraction(lastHolding.getPlayerAction().getTeId(), 2);
+                        basketballGameService.addFraction(lastHolding.getPlayerAction().getTeId(), 2);
                     }
                     event.setPlayerAction(lastHolding.getPlayerAction());
                     //TO DO 分数判断、更致信的
                     //大情况二：如果找到投篮人了
                 }else if(lastShooting!=null){
-                    basketballGameService.addfraction(lastShooting.getPlayerAction().getTeId(), 2);
+                    basketballGameService.addFraction(lastShooting.getPlayerAction().getTeId(), 2);
                     event.setPlayerAction(lastShooting.getPlayerAction());
                 }
             }
