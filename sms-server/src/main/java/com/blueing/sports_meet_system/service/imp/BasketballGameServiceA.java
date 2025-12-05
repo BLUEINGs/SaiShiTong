@@ -41,7 +41,7 @@ public class BasketballGameServiceA implements BasketballGameService {
 
     @Transactional
     @Override
-    public void addBasketballGame(String title, String nameA, String rgbA, String nameB, String rgbB,String rtmp,
+    public void addBasketballGame(String title, String nameA, String rgbA, String nameB, String rgbB, String rtmp,
                                   ZonedDateTime startTime1, ZonedDateTime endTime1,
                                   ZonedDateTime startTime2, ZonedDateTime endTime2,
                                   ZonedDateTime startTime3, ZonedDateTime endTime3,
