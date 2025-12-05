@@ -28,6 +28,7 @@ oss:
   asset:
     model:
       basketballYoloModel: D:\\Users\\王士豪\\OneDrive\\文档\\帧界篮球\\best.onnx
+      #此路径必须为绝对路径
 
 logging:
   level:

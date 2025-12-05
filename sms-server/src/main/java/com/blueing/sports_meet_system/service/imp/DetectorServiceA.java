@@ -59,6 +59,7 @@ public class DetectorServiceA {
          * 创建会话
          * 会话环境：通过模型和会话设置创建会话的工具
          */
+
         session = env.createSession(modelPath, sessionOptions);
         NodeInfo inputInfo = session.getInputInfo().values().iterator().next();
         inputName = inputInfo.getName();
